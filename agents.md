@@ -4,8 +4,8 @@
 
 | File | Answers | Wins on |
 |---|---|---|
-| `metadata/architecture/architecture.md` | What to build — pipeline, data model, Notion schema, routing rule | design conflicts |
-| `metadata/plan.md` | When/how to build it — stack, per-source build loop, phase table | sequencing conflicts |
+| `docs/adr/architecture.md` | What to build — pipeline, data model, Notion schema, routing rule | design conflicts |
+| `docs/plan.md` | When/how to build it — stack, per-source build loop, phase table | sequencing conflicts |
 
 Read both before touching code. If they conflict, architecture.md is authoritative for design, plan.md for order of operations.
 
