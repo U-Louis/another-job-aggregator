@@ -1,26 +1,9 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import type { JobOffer } from "../types/job-offer.ts"
+import { offer } from "../test/job-offer-fixture.ts"
 import { dedup } from "./dedup.ts"
+import { applyForbiddenFilter } from "./filter.ts"
 import { makeDedupKey, normalize } from "./normalize.ts"
-
-function offer(overrides: Partial<JobOffer> = {}): JobOffer {
-  const title = overrides.title ?? "Senior Engineer"
-  const company = overrides.company ?? "Acme"
-  return {
-    title,
-    company,
-    dedupKey: overrides.dedupKey ?? makeDedupKey(title, company),
-    url: "https://example.com/1",
-    location: "Paris",
-    remote: "unknown",
-    salary: "",
-    description: "A job",
-    publishedAt: "2026-01-01T00:00:00Z",
-    source: "adzuna-remote",
-    ...overrides,
-  }
-}
 
 test("normalize lowercases, strips punctuation, and collapses whitespace", () => {
   assert.equal(normalize("  Senior  Engineer!! "), "senior engineer")
@@ -55,4 +38,15 @@ test("dedup treats punctuation and case as the same job when keys are normalized
   const b = offer({ title: "typescript  dev.", company: "FOO" })
   assert.equal(a.dedupKey, b.dedupKey)
   assert.deepEqual(dedup([a, b]), [a])
+})
+
+test("filter then dedup drops forbidden titles before collapsing duplicates", () => {
+  const intern = offer({ title: "Intern Engineer" })
+  const first = offer({ title: "Engineer", url: "https://example.com/a" })
+  const duplicate = offer({ title: "Engineer", url: "https://example.com/b" })
+
+  assert.deepEqual(
+    dedup(applyForbiddenFilter([intern, first, duplicate], ["intern"])),
+    [first],
+  )
 })

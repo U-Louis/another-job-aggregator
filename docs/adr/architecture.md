@@ -26,13 +26,13 @@ flowchart LR
 
 ### Pipeline stages
 
-1. **Query Builder** — load conf, Zod-validate, pick enabled sources.
+1. **Query Builder** — load conf, Zod-validate, pick enabled sources (`load-config.ts` + CLI).
 2. **Pre-fetch adapters** (per provider) — conf query → fetch params (URL, headers, body).
 3. **Fetch Service** (per type) — HTTP dispatch with retries, timeouts; `Promise.allSettled` per source.
 4. **Post-fetch adapters** (per provider) — raw payload → `JobOffer[]`.
 5. **Forbidden filter** — drop offers whose title matches any conf `forbiddenStrings`.
 6. **Dedup** — merge by `dedupKey` within the run.
-7. **Notion sync** — upsert by `dedupKey`, truncate description.
+7. **Notion sync** — upsert by `dedupKey`, truncate description (`truncate.ts` helper).
 
 **Routing rule:** type-level fetch mechanics (`sources/api/fetch.ts`), provider-level adapters (`sources/api/<provider>/`). Registry maps conf `provider` → adapter folder.
 
@@ -147,13 +147,19 @@ src/
   cli/run.ts
   cli/test-payload.ts    # local raw payload capture → fixture
   core/
-    query-builder.ts
-    fetch-service.ts
+    load-config.ts       # YAML conf load + Zod validate (query-builder stage)
+    normalize.ts         # normalize(), makeDedupKey()
     filter.ts
     dedup.ts
-    notion-sync.ts
-    error-log.ts
+    truncate.ts          # description hard-slice before Notion
+    fetch-service.ts     # phase 2+
+    notion-sync.ts       # phase 5+
+    error-log.ts         # phase 5+
+  test/
+    job-offer-fixture.ts # shared test factory
   types/
+    config.ts
+    job-offer.ts
   sources/
     registry.ts
     api/
@@ -177,7 +183,7 @@ configs/
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `aggregate.yml` | Cron `0 7 * * *` Europe/Paris + `workflow_dispatch` | Matrix over `configs/*.yaml`; full pipeline per conf |
+| `aggregate.yml` | Cron `0 7 * * *` with `timezone: "Europe/Paris"` + `workflow_dispatch` | Matrix over `configs/*.yaml`; full pipeline per conf |
 
 Matrix jobs run **sequentially** (`max-parallel: 1`) so each job sees prior upserts and avoids duplicate Notion rows from concurrent writes.
 

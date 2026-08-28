@@ -1,23 +1,7 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import type { JobOffer } from "../types/job-offer.ts"
+import { offer } from "../test/job-offer-fixture.ts"
 import { applyForbiddenFilter } from "./filter.ts"
-
-function offer(overrides: Partial<JobOffer> = {}): JobOffer {
-  return {
-    dedupKey: "engineer | acme",
-    title: "Engineer",
-    company: "Acme",
-    url: "https://example.com/1",
-    location: "Paris",
-    remote: "unknown",
-    salary: "",
-    description: "A job",
-    publishedAt: "2026-01-01T00:00:00Z",
-    source: "adzuna-remote",
-    ...overrides,
-  }
-}
 
 test("applyForbiddenFilter drops titles that contain a forbidden substring", () => {
   const kept = offer({ title: "Senior TypeScript Engineer" })
