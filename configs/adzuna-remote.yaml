@@ -1,0 +1,14 @@
+forbiddenStrings:
+  - intern
+  - stage
+
+sources:
+  - id: adzuna-remote
+    type: api
+    provider: adzuna
+    enabled: true
+    query:
+      country: fr
+      what: typescript
+      where: paris
+      what_exclude: intern

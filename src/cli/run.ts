@@ -1,16 +1,10 @@
+import { confPathFromArgv } from "./args.ts"
 import { loadConfig } from "../core/load-config.ts"
 
-function confPathFromArgv(argv: string[]): string {
-  const flagIndex = argv.indexOf("--conf")
-  const path = flagIndex === -1 ? undefined : argv[flagIndex + 1]
-  if (!path || path.startsWith("-")) {
-    console.error("Usage: npm start -- --conf <path-to-yaml>")
-    process.exit(1)
-  }
-  return path
-}
-
-const confPath = confPathFromArgv(process.argv.slice(2))
+const confPath = confPathFromArgv(
+  process.argv.slice(2),
+  "Usage: npm start -- --conf <path-to-yaml>",
+)
 
 try {
   const config = loadConfig(confPath)

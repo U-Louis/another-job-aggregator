@@ -16,6 +16,10 @@ export function registerAdapter(
   adapters[type][provider] = adapter
 }
 
+export function hasAdapter(type: SourceType, provider: string): boolean {
+  return provider in adapters[type]
+}
+
 export function getAdapter(type: SourceType, provider: string): ProviderAdapter {
   const adapter = adapters[type][provider]
   if (!adapter) {
