@@ -1,9 +1,15 @@
 import {
+  APIErrorCode,
+  APIResponseError,
   Client,
   collectPaginatedAPI,
   isFullPage,
 } from "@notionhq/client"
 import type { JobOffer } from "../types/job-offer.ts"
+import {
+  FETCH_BACKOFF_BASE_MS,
+  FETCH_MAX_RETRIES,
+} from "../types/fetch.ts"
 
 export const NOTION_PROPERTIES = {
   title: "Title",
@@ -24,6 +30,55 @@ type RichTextRequest = {
 }
 
 export type NotionSyncClient = Pick<Client, "databases" | "pages">
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function isRetryableNotionError(err: unknown): boolean {
+  if (!APIResponseError.isAPIResponseError(err)) {
+    return false
+  }
+  return (
+    err.status === 429 ||
+    err.code === APIErrorCode.RateLimited ||
+    err.code === APIErrorCode.InternalServerError ||
+    err.code === APIErrorCode.ServiceUnavailable
+  )
+}
+
+/** Retry Notion API calls on rate limits and transient server errors. */
+export async function withNotionRetry<T>(
+  operation: () => Promise<T>,
+): Promise<T> {
+  let lastError: unknown
+  for (let attempt = 0; attempt <= FETCH_MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      await sleep(FETCH_BACKOFF_BASE_MS * 2 ** (attempt - 1))
+    }
+    try {
+      return await operation()
+    } catch (err) {
+      if (!isRetryableNotionError(err) || attempt >= FETCH_MAX_RETRIES) {
+        throw err
+      }
+      lastError = err
+    }
+  }
+  throw lastError
+}
+
+export function wrapNotionClientWithRetry(client: Client): NotionSyncClient {
+  return {
+    databases: {
+      query: (args) => withNotionRetry(() => client.databases.query(args)),
+    },
+    pages: {
+      create: (args) => withNotionRetry(() => client.pages.create(args)),
+      update: (args) => withNotionRetry(() => client.pages.update(args)),
+    },
+  }
+}
 
 function richText(content: string): RichTextRequest[] {
   return [{ type: "text", text: { content } }]
@@ -154,6 +209,7 @@ export function requireEnv(name: string): string {
   return value
 }
 
-export function createNotionClient(): Client {
-  return new Client({ auth: requireEnv("NOTION_TOKEN") })
+export function createNotionClient(): NotionSyncClient {
+  const client = new Client({ auth: requireEnv("NOTION_TOKEN") })
+  return wrapNotionClientWithRetry(client)
 }

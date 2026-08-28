@@ -1,3 +1,7 @@
+import {
+  APIErrorCode,
+  APIResponseError,
+} from "@notionhq/client"
 import assert from "node:assert/strict"
 import { test } from "node:test"
 import { offer } from "../test/job-offer-fixture.ts"
@@ -6,8 +10,52 @@ import {
   loadDedupKeyMap,
   readDedupKeyFromPage,
   syncOffersToNotion,
+  withNotionRetry,
   type NotionSyncClient,
 } from "./notion-sync.ts"
+
+function rateLimitedError(): APIResponseError {
+  return new APIResponseError({
+    code: APIErrorCode.RateLimited,
+    message: "Rate limited",
+    status: 429,
+    headers: {},
+    rawBodyText: "",
+  })
+}
+
+test("withNotionRetry retries rate-limited Notion calls", async () => {
+  let attempts = 0
+  const result = await withNotionRetry(async () => {
+    attempts += 1
+    if (attempts === 1) {
+      throw rateLimitedError()
+    }
+    return "ok"
+  })
+
+  assert.equal(result, "ok")
+  assert.equal(attempts, 2)
+})
+
+test("withNotionRetry does not retry validation errors", async () => {
+  let attempts = 0
+  await assert.rejects(
+    () =>
+      withNotionRetry(async () => {
+        attempts += 1
+        throw new APIResponseError({
+          code: APIErrorCode.ValidationError,
+          message: "Invalid body",
+          status: 400,
+          headers: {},
+          rawBodyText: "",
+        })
+      }),
+    (err: APIResponseError) => err.code === APIErrorCode.ValidationError,
+  )
+  assert.equal(attempts, 1)
+})
 
 test("buildPageProperties maps JobOffer fields to Notion properties", () => {
   const job = offer({

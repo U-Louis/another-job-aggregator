@@ -32,7 +32,8 @@ flowchart LR
 4. **Post-fetch adapters** (per provider) — raw payload → `JobOffer[]`.
 5. **Forbidden filter** — drop offers whose title matches any conf `forbiddenStrings`.
 6. **Dedup** — merge by `dedupKey` within the run.
-7. **Notion sync** — upsert by `dedupKey`, truncate description (`truncate.ts` helper).
+7. **Description truncate** — hard-slice descriptions via `truncate.ts` (`processOffers()` in `pipeline.ts`).
+8. **Notion sync** — upsert by `dedupKey`; skipped when there are no offers to write.
 
 **Routing rule:** type-level fetch mechanics (`sources/api/fetch.ts`), provider-level adapters (`sources/api/<provider>/`). Registry maps conf `provider` → adapter folder.
 
@@ -62,7 +63,7 @@ First end-to-end source: [Adzuna API](https://developer.adzuna.com/) (`provider:
   - `publishedAt` ← `created`, normalized to ISO 8601
   - `remote` ← always `"unknown"`
   - `salary` ← `"min - max CUR"` when both bounds present; `"min+ CUR"` when only min; `""` otherwise
-  - `description` ← strip HTML tags, decode entities → plain text → truncate
+  - `description` ← strip HTML tags, decode entities → plain text (truncated in pipeline before Notion)
   - `company` ← `company.display_name`, or `unknown (#####)` where `#####` is the first 5 decimal digits of a hash of `url` (zero-padded)
 
 ## Data model
@@ -119,19 +120,20 @@ sources:
 - `forbiddenStrings` — optional, default `[]`. Case-insensitive substring match on **title**; silent drop, not an error.
 - `provider` — selects adapter folder under `sources/<type>/` (e.g. `adzuna` → `sources/api/adzuna/`).
 - `id` — profile label; becomes `JobOffer.source`. One source entry per conf file in v1.
-- Secrets via GitHub Secrets only (`NOTION_TOKEN`, `NOTION_DATABASE_ID`, `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, plus per-provider keys as needed).
+- Secrets: copy `.env.example` → `.env.local` locally (`NOTION_TOKEN`, `NOTION_DATABASE_ID`, `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, plus per-provider keys as needed). In GitHub Actions, paste the filled-in file into the `ENVLOCAL` repository secret; the workflow writes it to `.env.local` before each run.
 
 ## Notion
 
 - One database, all jobs.
 - Properties: Title, Company, URL, Location, Remote (select), Salary, Description (truncated), PublishedAt (text), Source, DedupKey (upsert key).
 - On run: full DB query to load `dedupKey → pageId` map (no GHA cache in v1).
-- Sequential writes; rely on `@notionhq/client` retry for 429 responses.
+- Sequential writes; application-level retry on 429 / rate-limited and 5xx responses (same backoff as fetch — 3 retries, exponential).
 - No stale-job lifecycle — out of scope.
 
 ## Error handling
 
 - Per-source errors collected in memory; pipeline continues.
+- Error log path defaults to `errors.log`; override with optional `ERROR_LOG_PATH` env var.
 - GHA uploads error log artifact **only when non-empty**.
 - Exit code 1 only if **all** sources failed or Notion sync failed; partial success is OK.
 

@@ -50,20 +50,24 @@ async function main(): Promise<number> {
   )
 
   let notionOk = true
-  try {
-    const client = createNotionClient()
-    const databaseId = requireEnv("NOTION_DATABASE_ID")
-    const { created, updated } = await syncOffersToNotion(
-      client,
-      databaseId,
-      offers,
-    )
-    console.log(`Notion sync: ${created} created, ${updated} updated`)
-  } catch (err) {
-    notionOk = false
-    const message = errorMessage(err)
-    errorLog.add("notion", message)
-    console.error(`Notion sync failed: ${message}`)
+  if (offers.length > 0) {
+    try {
+      const client = createNotionClient()
+      const databaseId = requireEnv("NOTION_DATABASE_ID")
+      const { created, updated } = await syncOffersToNotion(
+        client,
+        databaseId,
+        offers,
+      )
+      console.log(`Notion sync: ${created} created, ${updated} updated`)
+    } catch (err) {
+      notionOk = false
+      const message = errorMessage(err)
+      errorLog.add("notion", message)
+      console.error(`Notion sync failed: ${message}`)
+    }
+  } else {
+    console.log("Notion sync: skipped (no offers)")
   }
 
   if (writeErrorLogIfNonEmpty(ERROR_LOG_PATH, errorLog)) {
@@ -83,6 +87,6 @@ main()
     }
   })
   .catch((err) => {
-    console.error(err instanceof Error ? err.message : err)
+    console.error(errorMessage(err))
     process.exit(1)
   })
