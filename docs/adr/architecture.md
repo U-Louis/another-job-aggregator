@@ -27,14 +27,16 @@ flowchart LR
 ### Pipeline stages
 
 1. **Query Builder** — load conf, Zod-validate, pick enabled sources.
-2. **Pre-fetch adapters** (per source) — query spec → fetch params (URL, headers, body).
+2. **Pre-fetch adapters** (per provider) — conf query → fetch params (URL, headers, body).
 3. **Fetch Service** (per type) — HTTP dispatch with retries, timeouts; `Promise.allSettled` per source.
-4. **Post-fetch adapters** (per source) — raw payload → `JobOffer[]`.
+4. **Post-fetch adapters** (per provider) — raw payload → `JobOffer[]`.
 5. **Forbidden filter** — drop offers whose title matches any conf `forbiddenStrings`.
 6. **Dedup** — merge by `dedupKey` within the run.
 7. **Notion sync** — upsert by `dedupKey`, truncate description.
 
-**Routing rule:** type-level fetch mechanics (`sources/api/fetch.ts`), source-level adapters (`sources/api/<name>/query.ts` + `adapt.ts`).
+**Routing rule:** type-level fetch mechanics (`sources/api/fetch.ts`), provider-level adapters (`sources/api/<provider>/`). Registry maps conf `provider` → adapter folder.
+
+**Adapter contract:** each provider folder exports `buildQuery(confQuery) → FetchParams` and `adapt(rawPayload) → JobOffer[]`, plus a co-located Zod schema for conf query validation.
 
 ## Source types
 
@@ -47,6 +49,22 @@ flowchart LR
 
 No direct scraping, no inbound email parsing.
 
+### v1 provider: Adzuna
+
+First end-to-end source: [Adzuna API](https://developer.adzuna.com/) (`provider: adzuna`, country `fr`).
+
+- Auth: `app_id` + `app_key` (GitHub Secrets `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`).
+- Fetch: page 1 only, `results_per_page` hardcoded to 50 in `query.ts`.
+- Conf query fields: `country`, `what`, `where`, `what_exclude`.
+- Adapt mapping:
+  - `url` ← `redirect_url` (as-is)
+  - `location` ← `location.display_name`
+  - `publishedAt` ← `created` (ISO string, pass through)
+  - `remote` ← always `"unknown"`
+  - `salary` ← `"min - max CUR"` when both bounds present; `"min+ CUR"` when only min; `""` otherwise
+  - `description` ← strip HTML tags, decode entities → plain text → truncate
+  - `company` ← `company.display_name`, or `"unknown"` if missing
+
 ## Data model
 
 ```typescript
@@ -54,16 +72,16 @@ type RemotePolicy = "onsite" | "hybrid" | "remote" | "unknown"
 
 interface JobOffer {
   id: string           // random UUID — internal only
-  dedupKey: string     // title + company + source — dedup + Notion upsert
+  dedupKey: string     // normalize(title) | normalize(company) — dedup + Notion upsert
   title: string
   company: string
   url: string
   location: string
   remote: RemotePolicy
   salary: string
-  description: string  // truncated to ~1900 chars before Notion
-  publishedAt: string // plain string, no Date objects
-  source: string       // e.g. "greenhouse:acme"
+  description: string  // truncated to 1900 chars + "…" before Notion
+  publishedAt: string  // plain string, no Date objects
+  source: string       // profile label, e.g. "adzuna-remote" — provenance only
 }
 ```
 
@@ -72,13 +90,16 @@ interface JobOffer {
 | Field | Purpose |
 |-------|---------|
 | `id` | Random UUID at adapt time. Not used for dedup or Notion lookup. |
-| `dedupKey` | `normalize(title) \| company \| source` (lowercase, trim). In-run dedup + cross-run Notion upsert. |
+| `dedupKey` | `normalize(title) \| normalize(company)`. In-run dedup + cross-run Notion upsert. `source` is not part of the key — same job from different profiles or providers collapses to one row. |
+| `source` | Conf profile label (`adzuna-remote`, …). Metadata / Notion Source property only. |
 
-Dedup collision within a run: keep one winner (arbitrary or longer description).
+**`normalize()`** (shared by title and company): lowercase, trim, collapse internal whitespace, strip punctuation.
+
+Dedup collision within a run: keep first winner (stable by source order in conf).
 
 ## Config
 
-YAML per query profile. Multiple conf files → multiple GHA actions; all write to the **same** Notion DB (no profile property on rows).
+One self-contained YAML file per query profile. Multiple conf files → single `aggregate.yml` workflow with a matrix; all write to the **same** Notion DB (no profile property on rows).
 
 ```yaml
 forbiddenStrings:
@@ -86,36 +107,47 @@ forbiddenStrings:
   - stage
 
 sources:
-  - id: acme-greenhouse
+  - id: adzuna-remote
     type: api
+    provider: adzuna
     enabled: true
     query:
-      keywords: ["typescript"]
-      remote: remote
+      country: fr
+      what: typescript
+      where: paris
+      what_exclude: intern
 ```
 
 - `forbiddenStrings` — optional, default `[]`. Case-insensitive substring match on **title**; silent drop, not an error.
-- Secrets via GitHub Secrets only (`NOTION_TOKEN`, `NOTION_DATABASE_ID`, per-source keys).
+- `provider` — selects adapter folder under `sources/<type>/` (e.g. `adzuna` → `sources/api/adzuna/`).
+- `id` — profile label; becomes `JobOffer.source`. One source entry per conf file in v1.
+- Secrets via GitHub Secrets only (`NOTION_TOKEN`, `NOTION_DATABASE_ID`, `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, plus per-provider keys as needed).
 
 ## Notion
 
 - One database, all jobs.
 - Properties: Title, Company, URL, Location, Remote (select), Salary, Description (truncated), PublishedAt (text), Source, DedupKey (upsert key).
-- On run: load `dedupKey → pageId` map (optionally cached in GHA between runs).
-- Rate-limited sequential writes (~300ms or client retry).
+- On run: full DB query to load `dedupKey → pageId` map (no GHA cache in v1).
+- Sequential writes; rely on `@notionhq/client` retry for 429 responses.
 - No stale-job lifecycle — out of scope.
 
 ## Error handling
 
 - Per-source errors collected in memory; pipeline continues.
 - GHA uploads error log artifact **only when non-empty**.
-- Exit code 1 if errors occurred (warning), successful sources still sync.
+- Exit code 1 only if **all** sources failed or Notion sync failed; partial success is OK.
+
+## Fetch defaults
+
+- 3 retries with exponential backoff.
+- 30s timeout per request.
 
 ## Repo layout
 
 ```
 src/
   cli/run.ts
+  cli/fetch-payload.ts   # local raw payload capture → fixture
   core/
     query-builder.ts
     fetch-service.ts
@@ -128,27 +160,36 @@ src/
     registry.ts
     api/
       fetch.ts
-      <source>/
-        query.ts      # pre-fetch adapter
-        adapt.ts      # post-fetch adapter
+      adzuna/
+        schema.ts         # Zod query schema
+        query.ts          # buildQuery
+        adapt.ts
         fixtures/
     rss/ ...
     xhr/ ...
     external-scraper/ ...
 configs/
+  adzuna-remote.yaml
+  adzuna-not-remote.yaml
 .github/workflows/
   aggregate.yml
-  test-payload.yml
 ```
 
 ## GitHub Actions
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `aggregate.yml` | Cron (daily) | Full pipeline for a conf file |
-| `test-payload.yml` | `workflow_dispatch` | Fetch raw payload for one source; artifact only, no Notion |
+| `aggregate.yml` | Cron `0 7 * * *` Europe/Paris + `workflow_dispatch` | Matrix over `configs/*.yaml`; full pipeline per conf |
 
-Caching: npm (`setup-node`), optional Notion pageId map.
+Matrix jobs run in parallel; each job upserts into the same Notion DB. Parallel Notion writes are acceptable in v1.
+
+Caching: npm (`setup-node`).
+
+## Tooling
+
+- ESM (`"type": "module"`).
+- Tests: `node:test` + `tsx` — hand-run, no CI gate.
+- Payload capture: `npm run fetch-payload -- --conf configs/<profile>.yaml` (local CLI, not a GHA workflow).
 
 ## Out of scope
 
@@ -156,3 +197,4 @@ Caching: npm (`setup-node`), optional Notion pageId map.
 - Stale job archival / deletion
 - Job lifecycle management beyond kanban feed
 - CI test gate (tests exist, run manually)
+- `test-payload.yml` GHA workflow
