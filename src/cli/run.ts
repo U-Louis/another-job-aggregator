@@ -1,5 +1,6 @@
 import { confPathFromArgv } from "./args.ts"
 import { loadConfig } from "../core/load-config.ts"
+import "../sources/register-adapters.ts"
 
 const confPath = confPathFromArgv(
   process.argv.slice(2),

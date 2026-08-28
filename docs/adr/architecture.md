@@ -168,13 +168,13 @@ src/
         schema.ts         # Zod query schema
         query.ts          # buildQuery
         adapt.ts
-        fixtures/
     rss/ ...
     xhr/ ...
     external-scraper/ ...
 configs/
   adzuna-remote.yaml
   adzuna-not-remote.yaml
+payloads/                 # gitignored captured API responses
 .github/workflows/
   aggregate.yml
 ```
@@ -193,7 +193,7 @@ Caching: npm (`setup-node`).
 
 - ESM (`"type": "module"`).
 - Tests: `node:test` + `tsx` — hand-run, no CI gate.
-- Payload capture: `npm run test-payload -- --conf configs/<profile>.yaml` → `src/sources/api/<provider>/fixtures/<profile>.json` (local CLI, not a GHA workflow).
+- Payload capture: `npm run test-payload -- --conf configs/<profile>.yaml` → `payloads/<profile>.json` (gitignored, local CLI, not a GHA workflow).
 
 ## Out of scope
 

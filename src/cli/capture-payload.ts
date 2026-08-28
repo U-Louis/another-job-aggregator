@@ -1,8 +1,9 @@
 import { mkdirSync, writeFileSync } from "node:fs"
-import { basename, dirname, join } from "node:path"
+import { basename, dirname } from "node:path"
 import { loadConfig } from "../core/load-config.ts"
+import { payloadPath } from "../payload-path.ts"
 import { fetchByType } from "../sources/fetch-by-type.ts"
-import type { SourceEntry, SourceType } from "../types/config.ts"
+import type { SourceEntry } from "../types/config.ts"
 import { buildCaptureParams } from "./capture/index.ts"
 
 export function profileNameFromConfPath(confPath: string): string {
@@ -10,8 +11,8 @@ export function profileNameFromConfPath(confPath: string): string {
   return base.replace(/\.(ya?ml)$/i, "")
 }
 
-export function fixturePath(type: SourceType, provider: string, profile: string): string {
-  return join("src", "sources", type, provider, "fixtures", `${profile}.json`)
+export function fixturePath(profile: string): string {
+  return payloadPath(profile)
 }
 
 export type CaptureResult = {
@@ -28,7 +29,7 @@ export async function capturePayloadForSource(
 ): Promise<CaptureResult> {
   const params = buildCaptureParams(source)
   const rawPayload = await fetchByType(source.type, params, fetchImpl)
-  const path = fixturePath(source.type, source.provider, profile)
+  const path = fixturePath(profile)
 
   mkdirSync(dirname(path), { recursive: true })
   writeFileSync(path, `${JSON.stringify(rawPayload, null, 2)}\n`, "utf8")

@@ -1,5 +1,6 @@
 import { confPathFromArgv } from "./args.ts"
 import { capturePayload } from "./capture-payload.ts"
+import "../sources/register-adapters.ts"
 
 const usage =
   "Usage: npm run test-payload -- --conf <path-to-yaml>"

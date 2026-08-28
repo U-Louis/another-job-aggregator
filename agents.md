@@ -33,9 +33,9 @@ Architecture.md's "Out of scope" list is deliberate, not incidental. If a task s
 
 After implementing a source's `query.ts`/`adapt.ts`, run its unit tests against the captured fixture before starting the next source. Don't chain several unverified sources together.
 
-## Secrets & fixtures
+## Secrets & payloads
 
-- Never commit `.env`, real tokens, or a fixture file that still contains a live API key/response header worth redacting.
+- Never commit `.env`, real tokens, or captured API payloads under `payloads/` (gitignored; may contain account-specific redirect URLs).
 - A new source needing credentials gets its secret **name** added to the conf/workflow — never a value, never printed to logs or chat.
 
 ## Git

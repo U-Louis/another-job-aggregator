@@ -52,11 +52,8 @@ test("profileNameFromConfPath strips yaml extension", () => {
   assert.equal(profileNameFromConfPath("configs/adzuna-remote.yml"), "adzuna-remote")
 })
 
-test("fixturePath follows type/provider/profile layout", () => {
-  assert.equal(
-    fixturePath("api", "adzuna", "adzuna-remote"),
-    "src/sources/api/adzuna/fixtures/adzuna-remote.json",
-  )
+test("fixturePath resolves profile name under payloads/", () => {
+  assert.equal(fixturePath("adzuna-remote"), "payloads/adzuna-remote.json")
 })
 
 test("capturePayloadForSource writes fetched JSON to the fixture path", async () => {
@@ -84,7 +81,7 @@ test("capturePayloadForSource writes fetched JSON to the fixture path", async ()
     fetchImpl,
   )
 
-  assert.equal(result.path, "src/sources/api/adzuna/fixtures/adzuna-remote.json")
+  assert.equal(result.path, "payloads/adzuna-remote.json")
   const written = JSON.parse(readFileSync(result.path, "utf8")) as {
     results: Array<{ id: string }>
   }
