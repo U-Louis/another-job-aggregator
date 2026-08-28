@@ -1,11 +1,11 @@
 import assert from "node:assert/strict"
-import { test } from "node:test"
+import { beforeEach, test } from "node:test"
 import { z } from "zod"
 import type { ProviderAdapter } from "../types/adapter.ts"
 import type { SourceEntry } from "../types/config.ts"
 import { offer } from "../test/job-offer-fixture.ts"
 import { fetchAllSources } from "./fetch-service.ts"
-import { registerAdapter } from "../sources/registry.ts"
+import { clearAdapters, registerAdapter } from "../sources/registry.ts"
 
 const provider = "mock-fetch-service"
 
@@ -14,9 +14,7 @@ const mockAdapter: ProviderAdapter<{ term: string }> = {
   buildQuery: (query) => ({
     url: `https://example.com/search?q=${encodeURIComponent(query.term)}`,
   }),
-  adapt: (_payload, sourceId) => [
-    offer({ source: sourceId, title: "Fetched Job" }),
-  ],
+  adapt: () => [offer({ title: "Fetched Job", source: "wrong-source" })],
 }
 
 const source: SourceEntry = {
@@ -26,6 +24,8 @@ const source: SourceEntry = {
   enabled: true,
   query: { term: "typescript" },
 }
+
+beforeEach(() => clearAdapters())
 
 test("fetchAllSources adapts successful responses per source", async () => {
   registerAdapter("api", provider, mockAdapter)
@@ -41,6 +41,20 @@ test("fetchAllSources adapts successful responses per source", async () => {
     assert.equal(results[0].offers[0]?.title, "Fetched Job")
     assert.equal(results[0].offers[0]?.source, "mock-profile")
   }
+})
+
+test("fetchAllSources skips disabled sources", async () => {
+  registerAdapter("api", provider, mockAdapter)
+  const fetchImpl = (async () =>
+    new Response("{}", { status: 200 })) as typeof fetch
+
+  const results = await fetchAllSources(
+    [source, { ...source, id: "disabled-profile", enabled: false }],
+    fetchImpl,
+  )
+
+  assert.equal(results.length, 1)
+  assert.equal(results[0]?.sourceId, "mock-profile")
 })
 
 test("fetchAllSources collects per-source errors without aborting others", async () => {
@@ -69,7 +83,7 @@ test("fetchAllSources collects per-source errors without aborting others", async
   assert.equal(results[1]?.ok, true)
 })
 
-test("fetchAllSources uses Promise.allSettled semantics across sources", async () => {
+test("fetchAllSources continues other sources when one adapt fails", async () => {
   registerAdapter("api", provider, {
     ...mockAdapter,
     adapt: () => {

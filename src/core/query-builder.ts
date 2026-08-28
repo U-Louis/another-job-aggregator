@@ -26,5 +26,5 @@ export function buildFetchPlan(source: SourceEntry): FetchPlan {
 }
 
 export function buildFetchPlans(sources: SourceEntry[]): FetchPlan[] {
-  return sources.map(buildFetchPlan)
+  return sources.filter((source) => source.enabled).map(buildFetchPlan)
 }

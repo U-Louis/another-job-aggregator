@@ -14,10 +14,10 @@ export async function fetchByType(
     case "api":
       return fetchApi(params, fetchImpl)
     case "rss":
-      return fetchRss(params)
+      return fetchRss(params, fetchImpl)
     case "xhr":
-      return fetchXhr(params)
+      return fetchXhr(params, fetchImpl)
     case "external-scraper":
-      return fetchExternalScraper(params)
+      return fetchExternalScraper(params, fetchImpl)
   }
 }

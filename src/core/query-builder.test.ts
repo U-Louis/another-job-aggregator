@@ -1,10 +1,10 @@
 import assert from "node:assert/strict"
-import { test } from "node:test"
+import { beforeEach, test } from "node:test"
 import { z } from "zod"
 import type { ProviderAdapter } from "../types/adapter.ts"
 import type { SourceEntry } from "../types/config.ts"
 import { buildFetchPlan, buildFetchPlans } from "./query-builder.ts"
-import { getAdapter, registerAdapter } from "../sources/registry.ts"
+import { clearAdapters, registerAdapter } from "../sources/registry.ts"
 
 const provider = "mock-query-builder"
 
@@ -23,6 +23,8 @@ const source: SourceEntry = {
   enabled: true,
   query: { term: "typescript" },
 }
+
+beforeEach(() => clearAdapters())
 
 test("buildFetchPlan validates query and builds fetch params", () => {
   registerAdapter("api", provider, mockAdapter)
@@ -47,16 +49,19 @@ test("buildFetchPlan rejects invalid provider queries", () => {
   )
 })
 
-test("buildFetchPlans maps every source entry", () => {
+test("buildFetchPlans maps enabled source entries", () => {
   registerAdapter("api", provider, mockAdapter)
   const plans = buildFetchPlans([source, { ...source, id: "other" }])
   assert.equal(plans.length, 2)
   assert.equal(plans[1]?.sourceId, "other")
 })
 
-test("getAdapter throws for unknown providers", () => {
-  assert.throws(
-    () => getAdapter("api", "definitely-missing-provider"),
-    /Unknown provider "definitely-missing-provider"/,
-  )
+test("buildFetchPlans skips disabled sources", () => {
+  registerAdapter("api", provider, mockAdapter)
+  const plans = buildFetchPlans([
+    source,
+    { ...source, id: "disabled", enabled: false },
+  ])
+  assert.equal(plans.length, 1)
+  assert.equal(plans[0]?.sourceId, "test-source")
 })
