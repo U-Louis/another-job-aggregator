@@ -19,7 +19,7 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 
 | # | Task | Status |
 |---|------|--------|
-| 1 | Scaffold TS project: core pipeline, Zod types, conf loader, `.gitignore`, GHA with npm cache | pending |
+| 1 | Scaffold TS project: core pipeline, Zod types, conf loader, `.gitignore`, GHA with npm cache | done |
 | 2 | `sources/api/` fetch layer + Query Builder + adapter interface + registry | pending |
 | 3 | `test-payload` CLI for Adzuna payload capture | pending |
 | 4 | Adzuna adapter (`schema`, `query`, `adapt`) from captured payload + fixture unit test | pending |
