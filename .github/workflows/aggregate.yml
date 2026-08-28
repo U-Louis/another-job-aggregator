@@ -39,9 +39,26 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx tsx src/cli/run.ts --conf ${{ matrix.conf }}
+      - name: Run pipeline
         env:
-          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
-          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
-          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+          ENVLOCAL: ${{ secrets.ENVLOCAL }}
+        run: |
+          set -a
+          printf '%s\n' "$ENVLOCAL" > .env.local
+          source .env.local
+          set +a
+          npx tsx src/cli/run.ts --conf ${{ matrix.conf }}
+      - id: error-log
+        if: always()
+        run: |
+          if [ -s errors.log ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.error-log.outputs.present == 'true'
+        with:
+          name: errors-${{ matrix.conf }}
+          path: errors.log
+          if-no-files-found: ignore

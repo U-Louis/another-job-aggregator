@@ -23,7 +23,7 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 | 2 | `sources/api/` fetch layer + Query Builder + adapter interface + registry | done |
 | 3 | `test-payload` CLI for Adzuna payload capture | done |
 | 4 | Adzuna adapter (`schema`, `query`, `adapt`) from captured payload + fixture unit test | done |
-| 5 | Wire filter, dedup, truncate, Notion sync, error artifact — end-to-end | pending |
+| 5 | Wire filter, dedup, truncate, Notion sync, error artifact — end-to-end | done |
 | 6 | Additional Adzuna query confs, then remaining API providers, then other types | pending |
 
 ## Unit tests (hand-run, no CI gate)
