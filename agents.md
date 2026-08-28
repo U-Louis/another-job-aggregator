@@ -21,7 +21,7 @@ The phase table is the only persistent state across sessions. When you finish a 
 
 ## Adding a source
 
-Follow the build loop in plan.md in order, without skipping steps to save time — in particular, don't write `query.ts`/`adapt.ts` against an imagined payload shape; wait for the real fixture from the `test-payload.yml` run.
+Follow the build loop in plan.md in order, without skipping steps to save time — in particular, don't write `query.ts`/`adapt.ts` against an imagined payload shape; wait for the real fixture from the `test-payload` CLI run.
 
 If a new source doesn't cleanly map to RSS / API / XHR / ExternalScraper, stop and ask instead of forcing it into the closest type.
 
