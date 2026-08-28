@@ -52,9 +52,9 @@ test("profileNameFromConfPath strips yaml extension", () => {
   assert.equal(profileNameFromConfPath("configs/adzuna-remote.yml"), "adzuna-remote")
 })
 
-test("fixturePath follows provider/profile layout", () => {
+test("fixturePath follows type/provider/profile layout", () => {
   assert.equal(
-    fixturePath("adzuna", "adzuna-remote"),
+    fixturePath("api", "adzuna", "adzuna-remote"),
     "src/sources/api/adzuna/fixtures/adzuna-remote.json",
   )
 })
