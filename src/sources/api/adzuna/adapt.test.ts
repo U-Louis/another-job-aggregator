@@ -61,7 +61,7 @@ test("adapt strips HTML and decodes entities in descriptions", () => {
         redirect_url: "https://www.adzuna.fr/details/1",
         created: "2026-01-01T00:00:00Z",
         description:
-          "<p>Hello&nbsp;world</p> &amp; <strong>team&#39;s</strong> work",
+          "<p>Hello&nbsp;world</p> &amp; <strong>team&apos;s</strong> work",
         location: { display_name: "Paris" },
         company: { display_name: "Acme" },
       },
@@ -82,6 +82,7 @@ test("adapt uses unknown company fallback with URL hash digits", () => {
 
   assert.ok(mapped)
   assert.match(mapped.company, /^unknown \(\d{5}\)$/)
+  assert.equal(mapped.salary, "60000 - 70000")
   assert.equal(
     mapped.dedupKey,
     makeDedupKey(mapped.title, mapped.company),

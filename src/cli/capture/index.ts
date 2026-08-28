@@ -2,13 +2,13 @@ import { buildFetchPlan } from "../../core/query-builder.ts"
 import type { SourceEntry } from "../../types/config.ts"
 import type { FetchParams } from "../../types/fetch.ts"
 import { hasAdapter } from "../../sources/registry.ts"
-import { buildAdzunaCaptureQuery } from "./adzuna.ts"
+import { buildQuery as buildAdzunaQuery } from "../../sources/api/adzuna/query.ts"
 
 type CaptureBuilder = (query: Record<string, unknown>) => FetchParams
 
 const captureBuilders: Partial<Record<string, Partial<Record<string, CaptureBuilder>>>> = {
   api: {
-    adzuna: buildAdzunaCaptureQuery,
+    adzuna: buildAdzunaQuery,
   },
 }
 

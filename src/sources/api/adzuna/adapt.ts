@@ -3,17 +3,24 @@ import { makeDedupKey } from "../../../core/normalize.ts"
 import type { JobOffer } from "../../../types/job-offer.ts"
 import { adzunaResponseSchema, type AdzunaJob } from "./schema.ts"
 
+const NAMED_ENTITIES: Record<string, string> = {
+  nbsp: " ",
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+}
+
 function stripHtml(value: string): string {
   return value
     .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
     .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
     .replace(/&#x([0-9a-f]+);/gi, (_, hex) =>
       String.fromCodePoint(Number.parseInt(hex, 16)),
+    )
+    .replace(/&([a-z]+);/gi, (entity, name: string) =>
+      NAMED_ENTITIES[name.toLowerCase()] ?? entity,
     )
     .replace(/\s+/g, " ")
     .trim()
