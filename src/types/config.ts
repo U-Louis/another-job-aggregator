@@ -19,6 +19,20 @@ export const sourceEntrySchema = z.object({
 
 export type SourceEntry = z.infer<typeof sourceEntrySchema>
 
+export const forbiddenStringsFileSchema = z.object({
+  forbiddenStrings: z.array(z.string()).default([]),
+})
+
+export type ForbiddenStringsFile = z.infer<typeof forbiddenStringsFileSchema>
+
+export const rawConfigSchema = z.object({
+  forbiddenStringsFrom: z.string().optional(),
+  forbiddenStrings: z.array(z.string()).default([]),
+  sources: z.array(sourceEntrySchema),
+})
+
+export type RawConfig = z.infer<typeof rawConfigSchema>
+
 export const configSchema = z.object({
   forbiddenStrings: z.array(z.string()).default([]),
   sources: z.array(sourceEntrySchema),

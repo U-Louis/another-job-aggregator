@@ -1,33 +1,4 @@
-forbiddenStrings:
-  - intern
-  - stagiaire
-  - junior
-  - stage
-  - commercial
-  - marketing
-  - business
-  - data analyst
-  - data scientist
-  - data engineer
-  - data architect
-  - data visualization
-  - data warehouse
-  - data warehouse architect
-  - data warehouse engineer
-  - data warehouse analyst
-  - ruby
-  - java
-  - C#
-  - clients
-  - client
-  - VBA
-  - territorial
-  - paie
-  - paiement
-  - iot
-  - ios
-  - android
-
+forbiddenStringsFrom: shared-forbidden-strings.yaml
 
 sources:
   - id: remotive-remote

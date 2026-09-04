@@ -50,6 +50,55 @@ ${validSource}
   assert.deepEqual(config.forbiddenStrings, ["intern", "stage"])
 })
 
+test("loadConfig merges forbiddenStringsFrom with profile-specific strings", () => {
+  const dir = mkdtempSync(join(tmpdir(), "aja-conf-"))
+  writeFileSync(
+    join(dir, "shared.yaml"),
+    `
+forbiddenStrings:
+  - intern
+  - stage
+`,
+  )
+  const path = join(dir, "conf.yaml")
+  writeFileSync(
+    path,
+    `
+forbiddenStringsFrom: shared.yaml
+forbiddenStrings:
+  - stage
+  - junior
+${validSource}
+`,
+  )
+
+  const config = loadConfig(path)
+  assert.deepEqual(config.forbiddenStrings, ["intern", "stage", "junior"])
+})
+
+test("loadConfig loads forbiddenStringsFrom without profile-specific strings", () => {
+  const dir = mkdtempSync(join(tmpdir(), "aja-conf-"))
+  writeFileSync(
+    join(dir, "shared.yaml"),
+    `
+forbiddenStrings:
+  - intern
+  - stage
+`,
+  )
+  const path = join(dir, "conf.yaml")
+  writeFileSync(
+    path,
+    `
+forbiddenStringsFrom: shared.yaml
+${validSource}
+`,
+  )
+
+  const config = loadConfig(path)
+  assert.deepEqual(config.forbiddenStrings, ["intern", "stage"])
+})
+
 test("loadConfig rejects an unknown source type", () => {
   const path = writeConf(`
 sources:

@@ -101,9 +101,9 @@ Dedup collision within a run: keep first winner (stable by source order in conf)
 One self-contained YAML file per query profile. Multiple conf files → single `aggregate.yml` workflow with a matrix; all write to the **same** Notion DB.
 
 ```yaml
+forbiddenStringsFrom: shared-forbidden-strings.yaml
 forbiddenStrings:
-  - intern
-  - stage
+  - extra-profile-term
 
 sources:
   - id: adzuna-remote
@@ -117,6 +117,7 @@ sources:
       what_exclude: intern
 ```
 
+- `forbiddenStringsFrom` — optional path to a shared YAML file (relative to the profile conf). Its `forbiddenStrings` are merged first; profile `forbiddenStrings` are appended on top (deduped).
 - `forbiddenStrings` — optional, default `[]`. Case-insensitive substring match on **title**; silent drop, not an error.
 - `query.what_or` — optional Adzuna search param (OR at API level). When present, post-fetch filter also requires at least one term in **title or description**.
 - `provider` — selects adapter folder under `sources/<type>/` (e.g. `adzuna` → `sources/api/adzuna/`).
@@ -175,8 +176,11 @@ src/
     xhr/ ...
     external-scraper/ ...
 configs/
+  shared-forbidden-strings.yaml
+  adzuna.yaml
   adzuna-remote.yaml
-  adzuna-not-remote.yaml
+  remotive.yaml
+  remotive-remote.yaml
 payloads/                 # gitignored captured API responses
 .github/workflows/
   aggregate.yml

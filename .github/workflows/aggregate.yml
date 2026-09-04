@@ -20,7 +20,7 @@ jobs:
         run: |
           {
             echo -n 'configs='
-            find configs -maxdepth 1 \( -name '*.yaml' -o -name '*.yml' \) | jq -R -s -c 'split("\n") | map(select(length > 0))'
+            find configs -maxdepth 1 \( -name '*.yaml' -o -name '*.yml' \) ! -name 'shared-forbidden-strings.yaml' | jq -R -s -c 'split("\n") | map(select(length > 0))'
           } >> "$GITHUB_OUTPUT"
 
   run:
