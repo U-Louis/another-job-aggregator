@@ -13,7 +13,8 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 5. Validate full UC: fetch → adapt → filter → dedup → Notion
 6. Repeat for next provider / query profile
 
-**v1 entry:** Adzuna (`provider: adzuna`, country `fr`) end-to-end before RSS / XHR / external-scraper.
+**v1 entry:** Adzuna (`provider: adzuna`, country `fr`) end-to-end — done.  
+**Current loop:** `external-scraper` type via Apify; first provider LinkedIn (`provider: linkedin`).
 
 ## Phases
 
@@ -24,7 +25,10 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 | 3 | `test-payload` CLI for Adzuna payload capture | done |
 | 4 | Adzuna adapter (`schema`, `query`, `adapt`) from captured payload + fixture unit test | done |
 | 5 | Wire filter, dedup, truncate, Notion sync, error artifact — end-to-end | done |
-| 6 | Additional Adzuna query confs, then remaining API providers, then other types | pending |
+| 6 | Additional Adzuna query confs + Remotive + RemoteOK API providers | done |
+| 7 | `external-scraper` fetch (Apify sync API) + LinkedIn adapter + conf + full UC | pending |
+| 8 | Indeed adapter (`provider: indeed`, same Apify fetch layer) | pending |
+| 9 | RSS / XHR source types | pending |
 
 ## Unit tests (hand-run, no CI gate)
 
