@@ -27,6 +27,7 @@ test("buildQuery builds the search URL with auth and filters", () => {
   const params = buildQuery({
     country: "fr",
     what: "typescript",
+    what_or: "react vue",
     where: "paris",
     what_exclude: "intern",
   })
@@ -40,6 +41,7 @@ test("buildQuery builds the search URL with auth and filters", () => {
   assert.equal(url.searchParams.get("app_key"), "test-app-key")
   assert.equal(url.searchParams.get("results_per_page"), "50")
   assert.equal(url.searchParams.get("what"), "typescript")
+  assert.equal(url.searchParams.get("what_or"), "react vue")
   assert.equal(url.searchParams.get("where"), "paris")
   assert.equal(url.searchParams.get("what_exclude"), "intern")
 })
@@ -52,6 +54,7 @@ test("buildQuery omits optional filters when absent", () => {
   const url = new URL(params.url)
 
   assert.equal(url.searchParams.get("what"), null)
+  assert.equal(url.searchParams.get("what_or"), null)
   assert.equal(url.searchParams.get("where"), null)
   assert.equal(url.searchParams.get("what_exclude"), null)
 })

@@ -3,6 +3,7 @@ import { z } from "zod"
 export const adzunaQuerySchema = z.object({
   country: z.string().min(1),
   what: z.string().optional(),
+  what_or: z.string().optional(),
   where: z.string().optional(),
   what_exclude: z.string().optional(),
 })

@@ -56,7 +56,7 @@ First end-to-end source: [Adzuna API](https://developer.adzuna.com/) (`provider:
 
 - Auth: `app_id` + `app_key` (GitHub Secrets `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`).
 - Fetch: page 1 only, `results_per_page` hardcoded to 50 in `query.ts`.
-- Conf query fields: `country`, `what`, `where`, `what_exclude`.
+- Conf query fields: `country`, `what`, `what_or`, `where`, `what_exclude`. Space-separated terms: `what` ANDs them, `what_or` ORs them, `what_exclude` excludes any.
 - Adapt mapping:
   - `url` ← `redirect_url` (as-is)
   - `location` ← `location.display_name`
@@ -118,6 +118,7 @@ sources:
 ```
 
 - `forbiddenStrings` — optional, default `[]`. Case-insensitive substring match on **title**; silent drop, not an error.
+- `query.what_or` — optional Adzuna search param (OR at API level). When present, post-fetch filter also requires at least one term in **title or description**.
 - `provider` — selects adapter folder under `sources/<type>/` (e.g. `adzuna` → `sources/api/adzuna/`).
 - `id` — profile label; becomes `JobOffer.source`. One source entry per conf file in v1.
 - Secrets: copy `.env.example` → `.env.local` locally (`NOTION_TOKEN`, `NOTION_DATABASE_ID`, `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, plus per-provider keys as needed). In GitHub Actions, paste the filled-in file into the `ENVLOCAL` repository secret; the workflow writes it to `.env.local` before each run.

@@ -1,0 +1,38 @@
+forbiddenStrings:
+  - intern
+  - stagiaire
+  - junior
+  - stage
+  - commercial
+  - marketing
+  - business
+  - data analyst
+  - data scientist
+  - data engineer
+  - data architect
+  - data visualization
+  - data warehouse
+  - data warehouse architect
+  - data warehouse engineer
+  - data warehouse analyst
+  - ruby
+  - java
+  - C#
+  - clients
+  - client
+  - VBA
+  - territorial
+  - paie
+  - paiement
+
+
+sources:
+  - id: adzuna
+    type: api
+    provider: adzuna
+    enabled: true
+    query:
+      country: fr
+      what_or: développeur developpeur développement logiciel web typescript PHP symfony laravel javascript
+      where: caen normandie
+      what_exclude: ''

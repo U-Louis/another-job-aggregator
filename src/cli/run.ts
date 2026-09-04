@@ -1,6 +1,7 @@
 import { confPathFromArgv } from "./args.ts"
 import { loadConfig } from "../core/load-config.ts"
 import { fetchAllSources } from "../core/fetch-service.ts"
+import { requiredAnyOfFromSources } from "../core/filter.ts"
 import { processOffers } from "../core/pipeline.ts"
 import { ErrorLog, writeErrorLogIfNonEmpty } from "../core/error-log.ts"
 import {
@@ -44,7 +45,12 @@ async function main(): Promise<number> {
     }
   }
 
-  const offers = processOffers(fetchedOffers, config.forbiddenStrings)
+  const requiredAnyOf = requiredAnyOfFromSources(config.sources)
+  const offers = processOffers(
+    fetchedOffers,
+    config.forbiddenStrings,
+    requiredAnyOf,
+  )
   console.log(
     `Processed ${confPath}: ${fetchedOffers.length} fetched, ${offers.length} after filter/dedup`,
   )

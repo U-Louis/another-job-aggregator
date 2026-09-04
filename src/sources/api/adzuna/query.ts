@@ -25,6 +25,9 @@ export function buildQuery(query: AdzunaQuery): FetchParams {
   if (parsed.what !== undefined) {
     params.set("what", parsed.what)
   }
+  if (parsed.what_or !== undefined) {
+    params.set("what_or", parsed.what_or)
+  }
   if (parsed.where !== undefined) {
     params.set("where", parsed.where)
   }
