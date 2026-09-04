@@ -1,0 +1,12 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: remoteok-remote
+    type: api
+    provider: remoteok
+    enabled: true
+    query:
+      tags: dev
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: remote télétravail full-remote
+      what_exclude_remote: partiel unknown
