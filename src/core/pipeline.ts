@@ -1,6 +1,8 @@
 import {
+  applyExcludedRemoteFilter,
   applyForbiddenFilter,
   applyRequiredAnyFilter,
+  applyRequiredAnyRemoteFilter,
 } from "./filter.ts"
 import { dedup } from "./dedup.ts"
 import { truncateDescription } from "./truncate.ts"
@@ -11,10 +13,18 @@ export function processOffers(
   offers: JobOffer[],
   forbiddenStrings: string[],
   requiredAnyOf: string[] = [],
+  requiredAnyOfRemote: string[] = [],
+  excludedRemote: string[] = [],
 ): JobOffer[] {
-  const filtered = applyRequiredAnyFilter(
-    applyForbiddenFilter(offers, forbiddenStrings),
-    requiredAnyOf,
+  const filtered = applyRequiredAnyRemoteFilter(
+    applyRequiredAnyFilter(
+      applyExcludedRemoteFilter(
+        applyForbiddenFilter(offers, forbiddenStrings),
+        excludedRemote,
+      ),
+      requiredAnyOf,
+    ),
+    requiredAnyOfRemote,
   )
   const unique = dedup(filtered)
   return unique.map((offer) => ({

@@ -22,9 +22,7 @@ export function buildQuery(query: AdzunaQuery): FetchParams {
     results_per_page: String(ADZUNA_RESULTS_PER_PAGE),
   })
 
-  if (parsed.what !== undefined) {
-    params.set("what", parsed.what)
-  }
+  params.set("what", parsed.what)
   if (parsed.what_or !== undefined) {
     params.set("what_or", parsed.what_or)
   }

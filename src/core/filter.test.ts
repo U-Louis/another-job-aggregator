@@ -2,9 +2,13 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 import { offer } from "../test/job-offer-fixture.ts"
 import {
+  applyExcludedRemoteFilter,
   applyForbiddenFilter,
   applyRequiredAnyFilter,
+  applyRequiredAnyRemoteFilter,
+  excludedRemoteFromSources,
   requiredAnyOfFromSources,
+  requiredAnyOfRemoteFromSources,
 } from "./filter.ts"
 
 test("applyForbiddenFilter drops titles that contain a forbidden substring", () => {
@@ -77,16 +81,104 @@ test("requiredAnyOfFromSources reads what_or from enabled sources only", () => {
       type: "api",
       provider: "adzuna",
       enabled: true,
-      query: { country: "fr", what_or: "typescript vue" },
+      query: { country: "fr", what: "typescript", what_or: "typescript vue" },
     },
     {
       id: "b",
       type: "api",
       provider: "adzuna",
       enabled: false,
-      query: { country: "fr", what_or: "java" },
+      query: { country: "fr", what: "typescript", what_or: "java" },
     },
   ])
 
   assert.deepEqual(terms.sort(), ["typescript", "vue"])
+})
+
+test("requiredAnyOfRemoteFromSources reads what_or_remote from enabled sources only", () => {
+  const terms = requiredAnyOfRemoteFromSources([
+    {
+      id: "a",
+      type: "api",
+      provider: "adzuna",
+      enabled: true,
+      query: { country: "fr", what: "dev", what_or_remote: "remote télétravail" },
+    },
+    {
+      id: "b",
+      type: "api",
+      provider: "adzuna",
+      enabled: false,
+      query: { country: "fr", what: "dev", what_or_remote: "hybrid" },
+    },
+  ])
+
+  assert.deepEqual(terms.sort(), ["remote", "télétravail"])
+})
+
+test("applyRequiredAnyRemoteFilter keeps offers matching at least one remote term", () => {
+  const remote = offer({
+    title: "Full Remote TypeScript Engineer",
+    description: "Build APIs",
+  })
+  const hybrid = offer({
+    title: "Engineer",
+    description: "Hybrid work in Paris",
+    dedupKey: "engineer | acme",
+  })
+  const onsite = offer({
+    title: "On-site Engineer",
+    description: "Office-based role",
+    dedupKey: "on-site engineer | acme",
+  })
+
+  const result = applyRequiredAnyRemoteFilter(
+    [remote, hybrid, onsite],
+    ["remote", "hybrid", "télétravail"],
+  )
+  assert.deepEqual(result, [remote, hybrid])
+})
+
+test("excludedRemoteFromSources reads what_exclude_remote from enabled sources only", () => {
+  const terms = excludedRemoteFromSources([
+    {
+      id: "a",
+      type: "api",
+      provider: "adzuna",
+      enabled: true,
+      query: { country: "fr", what: "dev", what_exclude_remote: "partiel hybrid" },
+    },
+    {
+      id: "b",
+      type: "api",
+      provider: "adzuna",
+      enabled: false,
+      query: { country: "fr", what: "dev", what_exclude_remote: "onsite" },
+    },
+  ])
+
+  assert.deepEqual(terms.sort(), ["hybrid", "partiel"])
+})
+
+test("applyExcludedRemoteFilter drops offers matching excluded remote terms in title or description", () => {
+  const kept = offer({
+    title: "Full Remote Engineer",
+    description: "Fully distributed team",
+  })
+  const droppedTitle = offer({
+    title: "Télétravail partiel Engineer",
+    description: "Mostly remote",
+    dedupKey: "partiel title | acme",
+  })
+  const droppedDescription = offer({
+    title: "Engineer",
+    description: "Hybrid schedule available",
+    dedupKey: "hybrid desc | acme",
+  })
+
+  const result = applyExcludedRemoteFilter(
+    [kept, droppedTitle, droppedDescription],
+    ["partiel", "hybrid"],
+  )
+  assert.deepEqual(result, [kept])
 })

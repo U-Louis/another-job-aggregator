@@ -50,10 +50,10 @@ test("buildQuery omits optional filters when absent", () => {
   process.env.ADZUNA_APP_ID = "test-app-id"
   process.env.ADZUNA_APP_KEY = "test-app-key"
 
-  const params = buildQuery({ country: "fr" })
+  const params = buildQuery({ country: "fr", what: "typescript" })
   const url = new URL(params.url)
 
-  assert.equal(url.searchParams.get("what"), null)
+  assert.equal(url.searchParams.get("what"), "typescript")
   assert.equal(url.searchParams.get("what_or"), null)
   assert.equal(url.searchParams.get("where"), null)
   assert.equal(url.searchParams.get("what_exclude"), null)
@@ -64,7 +64,7 @@ test("buildQuery requires Adzuna credentials", () => {
   delete process.env.ADZUNA_APP_KEY
 
   assert.throws(
-    () => buildQuery({ country: "fr" }),
+    () => buildQuery({ country: "fr", what: "typescript" }),
     /Missing environment variable ADZUNA_APP_ID/,
   )
 })
@@ -74,7 +74,7 @@ test("buildQuery rejects invalid query shape", () => {
   process.env.ADZUNA_APP_KEY = "test-app-key"
 
   assert.throws(
-    () => buildQuery({} as { country: string }),
+    () => buildQuery({ country: "fr" } as { country: string; what: string }),
     /Required/,
   )
 })

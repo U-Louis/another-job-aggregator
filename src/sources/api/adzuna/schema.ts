@@ -2,10 +2,12 @@ import { z } from "zod"
 
 export const adzunaQuerySchema = z.object({
   country: z.string().min(1),
-  what: z.string().optional(),
+  what: z.string().min(1),
   what_or: z.string().optional(),
   where: z.string().optional(),
   what_exclude: z.string().optional(),
+  what_or_remote: z.string().optional(),
+  what_exclude_remote: z.string().optional(),
 })
 
 export type AdzunaQuery = z.infer<typeof adzunaQuerySchema>

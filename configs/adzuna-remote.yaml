@@ -36,8 +36,8 @@ sources:
     enabled: true
     query:
       country: fr
-      where: caen normandie
+      where: ''
       what: remote
       what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
-      what_or_remote: ''
-      what_exclude_remote: ''
+      what_or_remote: remote télétravail full-remote
+      what_exclude_remote: partiel unknown
