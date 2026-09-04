@@ -36,3 +36,5 @@ forbiddenStrings:
   - sales
   - salesforce
   - manager
+  - angularjs
+  - angular

@@ -1,8 +1,9 @@
 import type { FetchParams } from "../../types/fetch.ts"
+import { fetchApi } from "../api/fetch.ts"
 
 export async function fetchExternalScraper(
-  _params: FetchParams,
-  _fetchImpl?: typeof fetch,
+  params: FetchParams,
+  fetchImpl?: typeof fetch,
 ): Promise<unknown> {
-  throw new Error("External scraper fetch is not implemented")
+  return fetchApi(params, fetchImpl)
 }

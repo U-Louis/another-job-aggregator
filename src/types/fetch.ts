@@ -5,6 +5,7 @@ export type FetchParams = {
   method?: HttpMethod
   headers?: Record<string, string>
   body?: string
+  timeoutMs?: number
 }
 
 export const FETCH_MAX_RETRIES = 3

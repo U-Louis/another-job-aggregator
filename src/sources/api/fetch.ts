@@ -48,11 +48,12 @@ export async function fetchApi(
     }
 
     try {
+      const timeoutMs = params.timeoutMs ?? FETCH_TIMEOUT_MS
       const response = await fetchImpl(params.url, {
         method,
         headers: params.headers,
         body: params.body,
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs),
       })
 
       if (!response.ok) {

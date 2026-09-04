@@ -139,6 +139,21 @@ test("applyRequiredAnyRemoteFilter keeps offers matching at least one remote ter
   assert.deepEqual(result, [remote, hybrid])
 })
 
+test("applyRequiredAnyRemoteFilter keeps offers already marked remote without text match", () => {
+  const fromScraper = offer({
+    title: "Backend Engineer",
+    description: "Build APIs with Node.js",
+    remote: "remote",
+    dedupKey: "backend engineer | acme",
+  })
+
+  const result = applyRequiredAnyRemoteFilter(
+    [fromScraper],
+    ["remote", "télétravail"],
+  )
+  assert.deepEqual(result, [fromScraper])
+})
+
 test("excludedRemoteFromSources reads what_exclude_remote from enabled sources only", () => {
   const terms = excludedRemoteFromSources([
     {

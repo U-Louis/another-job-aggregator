@@ -79,11 +79,18 @@ export function applyRequiredAnyRemoteFilter(
   offers: JobOffer[],
   requiredAnyOf: string[],
 ): JobOffer[] {
-  return applyRequiredAnyOnHaystack(
-    offers,
-    requiredAnyOf,
-    (offer) => `${offer.title}\n${offer.description}`,
-  )
+  const needles = normalizeTerms(requiredAnyOf)
+  if (needles.length === 0) {
+    return offers
+  }
+
+  return offers.filter((offer) => {
+    if (offer.remote === "remote") {
+      return true
+    }
+    const haystack = `${offer.title}\n${offer.description}`.toLowerCase()
+    return needles.some((needle) => haystack.includes(needle))
+  })
 }
 
 /** Drop offers whose title or description contains any excluded remote term. */

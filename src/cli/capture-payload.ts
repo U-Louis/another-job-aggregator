@@ -1,10 +1,11 @@
 import { mkdirSync, writeFileSync } from "node:fs"
 import { basename, dirname } from "node:path"
+import { buildFetchPlan } from "../core/query-builder.ts"
 import { loadConfig } from "../core/load-config.ts"
 import { payloadPath } from "../payload-path.ts"
 import { fetchByType } from "../sources/fetch-by-type.ts"
+import "../sources/register-adapters.ts"
 import type { SourceEntry } from "../types/config.ts"
-import { buildCaptureParams } from "./capture/index.ts"
 
 export function profileNameFromConfPath(confPath: string): string {
   const base = basename(confPath)
@@ -27,8 +28,10 @@ export async function capturePayloadForSource(
   profile: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<CaptureResult> {
-  const params = buildCaptureParams(source)
-  const rawPayload = await fetchByType(source.type, params, fetchImpl)
+  const plan = buildFetchPlan(source)
+  const rawPayload = plan.adapter.fetchPayload
+    ? await plan.adapter.fetchPayload(plan.query, fetchImpl)
+    : await fetchByType(plan.type, plan.params, fetchImpl)
   const path = fixturePath(profile)
 
   mkdirSync(dirname(path), { recursive: true })

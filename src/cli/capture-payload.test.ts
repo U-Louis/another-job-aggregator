@@ -62,9 +62,20 @@ test("capturePayloadForSource writes fetched JSON to the fixture path", async ()
   process.env.ADZUNA_APP_KEY = "test-app-key"
 
   const fetchImpl = (async () =>
-    new Response(JSON.stringify({ results: [{ id: "job-1" }] }), {
-      status: 200,
-    })) as typeof fetch
+    new Response(
+      JSON.stringify({
+        results: [
+          {
+            title: "Test Job",
+            redirect_url: "https://www.adzuna.fr/details/1",
+            created: "2026-01-01T00:00:00Z",
+            description: "Desc",
+            location: { display_name: "Paris" },
+          },
+        ],
+      }),
+      { status: 200 },
+    )) as typeof fetch
 
   const result = await capturePayloadForSource(
     {
@@ -85,7 +96,7 @@ test("capturePayloadForSource writes fetched JSON to the fixture path", async ()
   const written = JSON.parse(readFileSync(result.path, "utf8")) as {
     results: Array<{ id: string }>
   }
-  assert.equal(written.results[0]?.id, "job-1")
+  assert.equal(written.results[0]?.title, "Test Job")
 })
 
 test("capturePayload captures all enabled sources from a conf file", async () => {
@@ -95,14 +106,14 @@ test("capturePayload captures all enabled sources from a conf file", async () =>
 
   const confPath = writeConf("adzuna-remote.yaml", adzunaSourceConf)
   const fetchImpl = (async () =>
-    new Response(JSON.stringify({ count: 1 }), { status: 200 })) as typeof fetch
+    new Response(JSON.stringify({ results: [] }), { status: 200 })) as typeof fetch
 
   const results = await capturePayload(confPath, fetchImpl)
 
   assert.equal(results.length, 1)
   assert.equal(results[0]?.sourceId, "adzuna-remote")
   assert.equal(results[0]?.profile, "adzuna-remote")
-  assert.equal(readFileSync(results[0]!.path, "utf8").includes('"count": 1'), true)
+  assert.equal(readFileSync(results[0]!.path, "utf8").includes('"results"'), true)
 })
 
 test("capturePayload rejects conf files with no enabled sources", async () => {

@@ -1,0 +1,17 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: linkedin-remote
+    type: external-scraper
+    provider: linkedin
+    enabled: true
+    query:
+      keyword: typescript developer
+      location: France
+      country: FR
+      remote: Remote
+      time_range: Past week
+      limit: 50
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: remote télétravail full-remote
+      what_exclude_remote: partiel unknown
