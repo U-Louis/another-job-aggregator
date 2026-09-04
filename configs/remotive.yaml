@@ -1,0 +1,41 @@
+forbiddenStrings:
+  - intern
+  - stagiaire
+  - junior
+  - stage
+  - commercial
+  - marketing
+  - business
+  - data analyst
+  - data scientist
+  - data engineer
+  - data architect
+  - data visualization
+  - data warehouse
+  - data warehouse architect
+  - data warehouse engineer
+  - data warehouse analyst
+  - ruby
+  - java
+  - C#
+  - clients
+  - client
+  - VBA
+  - territorial
+  - paie
+  - paiement
+  - iot
+  - ios
+  - android
+
+
+sources:
+  - id: remotive
+    type: api
+    provider: remotive
+    enabled: true
+    query:
+      search: typescript symfony laravel javascript PHP developer
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: ''
+      what_exclude_remote: ''
