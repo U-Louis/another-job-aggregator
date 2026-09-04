@@ -20,7 +20,9 @@ async function fetchOnePlan(
   fetchImpl?: typeof fetch,
 ): Promise<SourceFetchResult> {
   try {
-    const rawPayload = await fetchByType(plan.type, plan.params, fetchImpl)
+    const rawPayload = plan.adapter.fetchPayload
+      ? await plan.adapter.fetchPayload(plan.query, fetchImpl)
+      : await fetchByType(plan.type, plan.params, fetchImpl)
     const offers = stampSource(plan.adapter.adapt(rawPayload), plan.sourceId)
     return { sourceId: plan.sourceId, ok: true, offers }
   } catch (err) {

@@ -1,7 +1,8 @@
 import type { FetchParams } from "../../../types/fetch.ts"
 import { adzunaQuerySchema, type AdzunaQuery } from "./schema.ts"
 
-const ADZUNA_RESULTS_PER_PAGE = 50
+export const ADZUNA_RESULTS_PER_PAGE = 50
+export const ADZUNA_DEFAULT_MAX_PAGES = 3
 
 function requireEnv(name: string): string {
   const value = process.env[name]
@@ -11,7 +12,7 @@ function requireEnv(name: string): string {
   return value
 }
 
-export function buildQuery(query: AdzunaQuery): FetchParams {
+export function buildSearchUrl(query: AdzunaQuery, page: number): string {
   const parsed = adzunaQuerySchema.parse(query)
   const appId = requireEnv("ADZUNA_APP_ID")
   const appKey = requireEnv("ADZUNA_APP_KEY")
@@ -33,7 +34,9 @@ export function buildQuery(query: AdzunaQuery): FetchParams {
     params.set("what_exclude", parsed.what_exclude)
   }
 
-  const url = `https://api.adzuna.com/v1/api/jobs/${encodeURIComponent(parsed.country)}/search/1?${params}`
+  return `https://api.adzuna.com/v1/api/jobs/${encodeURIComponent(parsed.country)}/search/${page}?${params}`
+}
 
-  return { url }
+export function buildQuery(query: AdzunaQuery): FetchParams {
+  return { url: buildSearchUrl(query, 1) }
 }

@@ -55,7 +55,7 @@ No direct scraping, no inbound email parsing.
 First end-to-end source: [Adzuna API](https://developer.adzuna.com/) (`provider: adzuna`, country `fr`).
 
 - Auth: `app_id` + `app_key` (GitHub Secrets `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`).
-- Fetch: page 1 only, `results_per_page` hardcoded to 50 in `query.ts`.
+- Fetch: up to 3 pages at `results_per_page` 50 (API max); override with `query.max_pages`.
 - Conf query fields: `country`, `what`, `what_or`, `where`, `what_exclude`. Space-separated terms: `what` ANDs them, `what_or` ORs them, `what_exclude` excludes any.
 - Adapt mapping:
   - `url` ← `redirect_url` (as-is)

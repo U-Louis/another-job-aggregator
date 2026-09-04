@@ -7,6 +7,7 @@ export type FetchPlan = {
   sourceId: string
   type: SourceType
   provider: string
+  query: unknown
   params: FetchParams
   adapter: ProviderAdapter
 }
@@ -20,6 +21,7 @@ export function buildFetchPlan(source: SourceEntry): FetchPlan {
     sourceId: source.id,
     type: source.type,
     provider: source.provider,
+    query,
     params,
     adapter,
   }

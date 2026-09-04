@@ -8,6 +8,7 @@ export const adzunaQuerySchema = z.object({
   what_exclude: z.string().optional(),
   what_or_remote: z.string().optional(),
   what_exclude_remote: z.string().optional(),
+  max_pages: z.number().int().positive().optional(),
 })
 
 export type AdzunaQuery = z.infer<typeof adzunaQuerySchema>
