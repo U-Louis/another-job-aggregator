@@ -1,0 +1,16 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: wttj
+    type: xhr
+    provider: wttj
+    enabled: true
+    query:
+      locale: fr
+      country_code: FR
+      where: caen normandie
+      exclude_remote: fulltime
+      query: développeur
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: ''
+      what_exclude_remote: ''

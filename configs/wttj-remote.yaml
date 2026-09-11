@@ -1,0 +1,15 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: wttj-remote
+    type: xhr
+    provider: wttj
+    enabled: true
+    query:
+      locale: fr
+      country_code: FR
+      remote: fulltime
+      query: développeur typescript
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: remote télétravail full-remote
+      what_exclude_remote: partiel unknown
