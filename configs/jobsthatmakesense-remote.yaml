@@ -1,0 +1,15 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: jobsthatmakesense-remote
+    type: xhr
+    provider: jobsthatmakesense
+    enabled: true
+    query:
+      locale: fr
+      region: eu
+      remote: full
+      query: développeur typescript
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: remote télétravail full-remote
+      what_exclude_remote: partiel unknown
