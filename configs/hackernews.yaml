@@ -1,0 +1,11 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: hackernews
+    type: api
+    provider: hackernews
+    enabled: true
+    query:
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: remote REMOTE
+      what_exclude_remote: partiel unknown
