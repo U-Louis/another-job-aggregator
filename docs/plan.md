@@ -28,7 +28,7 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 | 6 | Additional Adzuna query confs + Remotive + RemoteOK API providers | done |
 | 7 | `external-scraper` fetch (Bright Data API) + LinkedIn adapter + conf + full UC | done |
 | 8 | Indeed adapter (`provider: indeed`, same Bright Data fetch layer) | pending |
-| 9 | RSS fetch layer (XHR fetch + WTTJ provider done) | pending |
+| 9 | RSS fetch layer + We Work Remotely provider | done |
 
 ## Unit tests (hand-run, no CI gate)
 

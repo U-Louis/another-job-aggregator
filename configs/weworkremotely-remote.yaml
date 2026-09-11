@@ -1,0 +1,12 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: weworkremotely-remote
+    type: rss
+    provider: weworkremotely
+    enabled: true
+    query:
+      feed_url: https://weworkremotely.com/categories/remote-programming-jobs.rss
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: remote télétravail full-remote
+      what_exclude_remote: partiel unknown
