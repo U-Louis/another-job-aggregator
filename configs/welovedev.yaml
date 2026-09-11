@@ -1,0 +1,16 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: welovedev
+    type: xhr
+    provider: welovedev
+    enabled: true
+    query:
+      query: développeur
+      around_lat: 49.182863
+      around_lng: -0.370679
+      around_radius: 50000
+      exclude_remote: fullTime
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: ''
+      what_exclude_remote: ''
