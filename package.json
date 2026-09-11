@@ -6,8 +6,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "start": "tsx src/cli/run.ts",
-    "test-payload": "tsx src/cli/test-payload.ts",
+    "start": "tsx --env-file=.env.local src/cli/run.ts",
+    "test-payload": "tsx --env-file=.env.local src/cli/test-payload.ts",
     "test": "tsx --test 'src/**/*.test.ts'",
     "prepare": "husky"
   },

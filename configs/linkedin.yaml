@@ -1,0 +1,17 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: linkedin
+    type: external-scraper
+    provider: linkedin
+    enabled: true
+    query:
+      keyword: typescript developer
+      location: caen normandie
+      country: FR
+      remote: On-site
+      time_range: Past week
+      limit: 50
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: ''
+      what_exclude_remote: ''
