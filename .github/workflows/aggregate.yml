@@ -59,6 +59,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always() && steps.error-log.outputs.present == 'true'
         with:
-          name: errors-${{ matrix.conf }}
+          name: errors-${{ replace(matrix.conf, '/', '-') }}
           path: errors.log
           if-no-files-found: ignore
