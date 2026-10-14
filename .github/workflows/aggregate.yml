@@ -50,15 +50,18 @@ jobs:
           npx tsx src/cli/run.ts --conf ${{ matrix.conf }}
       - id: error-log
         if: always()
+        env:
+          CONF: ${{ matrix.conf }}
         run: |
           if [ -s errors.log ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
           fi
+          echo "artifact=errors-${CONF//\//-}" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         if: always() && steps.error-log.outputs.present == 'true'
         with:
-          name: errors-${{ replace(matrix.conf, '/', '-') }}
+          name: ${{ steps.error-log.outputs.artifact }}
           path: errors.log
           if-no-files-found: ignore
