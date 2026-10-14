@@ -7,6 +7,7 @@
   },
   "scripts": {
     "start": "tsx --env-file=.env.local src/cli/run.ts",
+    "review": "tsx --env-file=.env.local src/cli/review.ts",
     "test-payload": "tsx --env-file=.env.local src/cli/test-payload.ts",
     "test": "tsx --test 'src/**/*.test.ts'",
     "prepare": "husky"
