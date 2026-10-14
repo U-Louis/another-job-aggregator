@@ -46,10 +46,28 @@ test("toReviewCards keeps empty Status and sorts newest first", () => {
   assert.equal(cards[0]?.remote, "remote")
 })
 
-test("isReviewDecision accepts only interesting and archived", () => {
+test("toReviewCards can keep a single status", () => {
+  const cards = toReviewCards(
+    [
+      page("open", null, "2026-04-01T00:00:00.000Z"),
+      page("kept", "interesting", "2026-01-01T00:00:00.000Z"),
+      page("newer", "interesting", "2026-05-01T00:00:00.000Z"),
+      page("gone", "archived", "2026-06-01T00:00:00.000Z"),
+    ],
+    "interesting",
+  )
+
+  assert.deepEqual(
+    cards.map((card) => card.id),
+    ["newer", "kept"],
+  )
+})
+
+test("isReviewDecision accepts interesting, archived, and applied", () => {
   assert.equal(isReviewDecision("interesting"), true)
   assert.equal(isReviewDecision("archived"), true)
-  assert.equal(isReviewDecision("applied"), false)
+  assert.equal(isReviewDecision("applied"), true)
+  assert.equal(isReviewDecision("hired"), false)
   assert.equal(isReviewDecision(null), false)
 })
 
@@ -59,5 +77,8 @@ test("buildStatusUpdate sets the Status select", () => {
   })
   assert.deepEqual(buildStatusUpdate("archived"), {
     Status: { select: { name: "archived" } },
+  })
+  assert.deepEqual(buildStatusUpdate("applied"), {
+    Status: { select: { name: "applied" } },
   })
 })

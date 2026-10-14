@@ -43,13 +43,14 @@ async function readBody(req: IncomingMessage): Promise<string> {
   return Buffer.concat(chunks).toString("utf8")
 }
 
-async function listCards() {
+async function listCards(queue: "review" | "interesting") {
   const client = createNotionClient()
   const pages = await collectPaginatedAPI(client.databases.query, {
     database_id: requireEnv("NOTION_DATABASE_ID"),
     filter: {
       property: STATUS_PROPERTY,
-      select: { is_empty: true },
+      select:
+        queue === "interesting" ? { equals: "interesting" } : { is_empty: true },
     },
   })
 
@@ -57,10 +58,10 @@ async function listCards() {
   for (const page of pages) {
     if (isFullPage(page)) fullPages.push(page)
   }
-  return toReviewCards(fullPages)
+  return toReviewCards(fullPages, queue === "interesting" ? "interesting" : "")
 }
 
-async function setDecision(pageId: string, decision: "interesting" | "archived") {
+async function setDecision(pageId: string, decision: "interesting" | "archived" | "applied") {
   const client = createNotionClient()
   await client.pages.update({
     page_id: pageId,
@@ -73,7 +74,7 @@ async function setDecision(pageId: string, decision: "interesting" | "archived")
 async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const url = new URL(req.url ?? "/", `http://${HOST}`)
 
-  if (req.method === "GET" && url.pathname === "/") {
+  if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/victory")) {
     const html = await readFile(htmlPath)
     res.writeHead(200, {
       "content-type": "text/html; charset=utf-8",
@@ -95,7 +96,12 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   }
 
   if (req.method === "GET" && url.pathname === "/api/jobs") {
-    sendJson(res, 200, { jobs: await listCards() })
+    const queue = url.searchParams.get("queue") ?? "review"
+    if (queue !== "review" && queue !== "interesting") {
+      sendJson(res, 400, { error: "Queue must be review or interesting" })
+      return
+    }
+    sendJson(res, 200, { jobs: await listCards(queue) })
     return
   }
 
@@ -113,7 +119,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
         ? body.decision
         : undefined
     if (!isReviewDecision(decision)) {
-      sendJson(res, 400, { error: "Decision must be interesting or archived" })
+      sendJson(res, 400, { error: "Decision must be interesting, archived, or applied" })
       return
     }
     await setDecision(pageId, decision)

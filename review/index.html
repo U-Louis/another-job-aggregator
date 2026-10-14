@@ -101,7 +101,31 @@
         justify-content: space-between;
         align-items: flex-end;
         gap: 1rem;
+        margin-bottom: 0.7rem;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.5rem;
         margin-bottom: 1rem;
+      }
+      .tabs a {
+        font-family: "Lilita One", sans-serif;
+        font-size: 1rem;
+        letter-spacing: 0.03em;
+        text-decoration: none;
+        color: #d5deea;
+        background: #152033;
+        border: 3px solid var(--ink);
+        border-radius: 999px;
+        padding: 0.28rem 0.85rem 0.18rem;
+        box-shadow: 0 3px 0 var(--ink);
+      }
+      .tabs a.on {
+        background: #f6e27a;
+        color: var(--ink);
+      }
+      .tabs a.laurel.on {
+        background: linear-gradient(180deg, #ffe9a0 0%, #e0b034 100%);
       }
       h1 {
         margin: 0;
@@ -176,6 +200,82 @@
       .crewmate.safe {
         animation: safe 0.34s ease-out;
       }
+      .crewmate.victory {
+        animation: victory 0.5s ease-out;
+      }
+      .halo {
+        position: relative;
+      }
+      .halo .rays {
+        position: fixed;
+        z-index: 0;
+        left: 50%;
+        top: 50%;
+        width: 220vmax;
+        height: 220vmax;
+        opacity: 0.22;
+        background: repeating-conic-gradient(
+          from 0deg at 50% 50%,
+          rgba(255, 196, 70, 0) 0deg 8deg,
+          rgba(255, 186, 48, 1) 8deg 13deg
+        );
+        -webkit-mask-image: radial-gradient(
+          circle at center,
+          #000 0%,
+          rgba(0, 0, 0, 0.75) 16%,
+          rgba(0, 0, 0, 0.2) 38%,
+          transparent 58%
+        );
+        mask-image: radial-gradient(
+          circle at center,
+          #000 0%,
+          rgba(0, 0, 0, 0.75) 16%,
+          rgba(0, 0, 0, 0.2) 38%,
+          transparent 58%
+        );
+        animation: rays 22s linear infinite;
+        pointer-events: none;
+      }
+      .halo.prize::before {
+        content: "";
+        position: absolute;
+        z-index: 0;
+        left: 50%;
+        top: 46%;
+        width: 130%;
+        height: 115%;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(ellipse, rgba(255, 204, 70, 0.4), rgba(180, 120, 20, 0.12) 46%, transparent 72%);
+        pointer-events: none;
+      }
+      .halo .meeting {
+        position: relative;
+        z-index: 1;
+      }
+      .halo.prize .meeting {
+        border-color: #8a6410;
+        box-shadow:
+          0 10px 0 #070b10,
+          inset 0 0 0 4px #e0b034,
+          0 0 36px rgba(240, 193, 75, 0.28);
+      }
+      .spark {
+        position: absolute;
+        z-index: 3;
+        width: 14px;
+        height: 14px;
+        background: #fff;
+        clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+        filter: drop-shadow(0 0 6px #ffe9a0);
+        pointer-events: none;
+        animation: spark 1.7s ease-in-out infinite;
+      }
+      .spark.s1 { top: 10%; left: 8%; animation-delay: 0s; }
+      .spark.s2 { top: 6%; right: 14%; width: 18px; height: 18px; animation-delay: 0.4s; }
+      .spark.s3 { top: 22%; right: 6%; animation-delay: 0.9s; }
+      .spark.s4 { top: 18%; left: 28%; width: 10px; height: 10px; animation-delay: 1.2s; }
+      .spark.s5 { top: 34%; left: 4%; width: 11px; height: 11px; animation-delay: 0.6s; }
+      .spark.s6 { top: 8%; left: 46%; width: 9px; height: 9px; animation-delay: 1.5s; }
       @keyframes eject {
         0% { transform: translateY(0) rotate(0) scale(1); }
         40% { transform: translateY(8px) rotate(-8deg) scale(1.05); }
@@ -185,6 +285,19 @@
         0% { transform: translateY(0); }
         40% { transform: translateY(-14px) scale(1.04); }
         100% { transform: translateY(0); }
+      }
+      @keyframes victory {
+        0% { transform: scale(1) rotate(0); }
+        45% { transform: scale(1.1) rotate(-6deg); }
+        100% { transform: scale(1) rotate(0); }
+      }
+      @keyframes rays {
+        from { transform: translate(-50%, -50%) rotate(0deg); }
+        to { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+      @keyframes spark {
+        0%, 100% { opacity: 0.15; transform: scale(0.45) rotate(0deg); }
+        50% { opacity: 1; transform: scale(1.15) rotate(18deg); }
       }
       .stamp {
         position: absolute;
@@ -201,6 +314,7 @@
         pointer-events: none;
       }
       .stamp.ok { color: #b6ff6a; }
+      .stamp.gold { color: #ffe08a; }
       .identity { min-width: 0; }
       .nameplate {
         display: inline-block;
@@ -303,19 +417,34 @@
     </div>
     <div id="app">
       <header>
-        <h1>Emergency meeting</h1>
+        <h1>{{ victory ? "Interesting" : "Jobs" }}</h1>
         <div class="count" v-if="!loading">{{ jobs.length }} left</div>
       </header>
+      <nav class="tabs">
+        <a href="/" :class="{ on: !victory }">Jobs</a>
+        <a href="/victory" class="laurel" :class="{ on: victory }">Interesting</a>
+      </nav>
       <p class="banner error" v-if="error">{{ error }}</p>
       <p class="banner" v-if="loading">Scanning the ship…</p>
-      <p class="banner" v-else-if="!current">The ship is clear.</p>
-      <article class="meeting" v-else>
+      <p class="banner" v-else-if="!current">{{ victory ? "The podium is empty." : "The ship is clear." }}</p>
+      <div class="halo" :class="{ prize: victory }" v-else>
+        <div class="rays" v-if="victory" aria-hidden="true"></div>
+        <article class="meeting">
+        <template v-if="victory">
+          <span class="spark s1" aria-hidden="true"></span>
+          <span class="spark s2" aria-hidden="true"></span>
+          <span class="spark s3" aria-hidden="true"></span>
+          <span class="spark s4" aria-hidden="true"></span>
+          <span class="spark s5" aria-hidden="true"></span>
+          <span class="spark s6" aria-hidden="true"></span>
+        </template>
         <div class="stage">
           <div class="crewmate" :class="motion">
             <img :src="crewSrc" alt="" />
           </div>
           <p class="stamp" v-if="motion === 'eject'">Ejected</p>
           <p class="stamp ok" v-if="motion === 'safe'">Crewmate</p>
+          <p class="stamp gold" v-if="motion === 'victory'">Applied</p>
         </div>
         <div class="identity">
           <p class="nameplate">{{ current.company || "Unknown" }}</p>
@@ -333,14 +462,15 @@
           <button class="no" type="button" :disabled="busy" @click="decide('archived')">
             No <small>EJECT <kbd>N</kbd></small>
           </button>
-          <button class="view" type="button" :disabled="!current.url" @click="view">
-            View <small>OPEN <kbd>V</kbd></small>
+          <button class="view" type="button" :disabled="!current.url || busy" @click="view">
+            View <small>{{ victory ? "APPLIED" : "OPEN" }} <kbd>V</kbd></small>
           </button>
-          <button class="yes" type="button" :disabled="busy" @click="decide('interesting')">
-            Yes <small>CREWMATE <kbd>Y</kbd></small>
+          <button class="yes" type="button" :disabled="busy" @click="decide(yesDecision)">
+            Yes <small>{{ victory ? "APPLIED" : "CREWMATE" }} <kbd>Y</kbd></small>
           </button>
         </div>
-      </article>
+        </article>
+      </div>
     </div>
     <script>
       const { createApp, ref, computed, watch, onMounted, onUnmounted } = Vue
@@ -361,6 +491,8 @@
 
       createApp({
         setup() {
+          const victory = location.pathname === "/victory"
+          const yesDecision = victory ? "applied" : "interesting"
           const jobs = ref([])
           const loading = ref(true)
           const busy = ref(false)
@@ -378,7 +510,7 @@
             loading.value = true
             error.value = ""
             try {
-              const res = await fetch("/api/jobs")
+              const res = await fetch(victory ? "/api/jobs?queue=interesting" : "/api/jobs")
               const body = await res.json()
               if (!res.ok) throw new Error(body.error || "Could not load jobs")
               jobs.value = body.jobs
@@ -394,7 +526,8 @@
             if (!card || busy.value) return
             busy.value = true
             error.value = ""
-            motion.value = decision === "archived" ? "eject" : "safe"
+            motion.value =
+              decision === "archived" ? "eject" : victory ? "victory" : "safe"
             try {
               const [res] = await Promise.all([
                 fetch("/api/jobs/" + encodeURIComponent(card.id), {
@@ -402,7 +535,7 @@
                   headers: { "content-type": "application/json" },
                   body: JSON.stringify({ decision }),
                 }),
-                wait(motion.value === "eject" ? 480 : 340),
+                wait(motion.value === "eject" ? 480 : motion.value === "victory" ? 500 : 340),
               ])
               const body = await res.json().catch(() => ({}))
               if (!res.ok) throw new Error(body.error || "Could not update Notion")
@@ -417,8 +550,9 @@
 
           function view() {
             const card = current.value
-            if (!card?.url) return
+            if (!card?.url || busy.value) return
             window.open(card.url, "_blank", "noopener")
+            if (victory) decide("applied")
           }
 
           function onKey(event) {
@@ -427,7 +561,7 @@
             if (tag === "INPUT" || tag === "TEXTAREA") return
             const key = event.key.toLowerCase()
             if (key === "n") decide("archived")
-            else if (key === "y") decide("interesting")
+            else if (key === "y") decide(yesDecision)
             else if (key === "v") view()
           }
 
@@ -437,7 +571,19 @@
           })
           onUnmounted(() => window.removeEventListener("keydown", onKey))
 
-          return { jobs, loading, busy, error, current, motion, crewSrc, decide, view }
+          return {
+            victory,
+            yesDecision,
+            jobs,
+            loading,
+            busy,
+            error,
+            current,
+            motion,
+            crewSrc,
+            decide,
+            view,
+          }
         },
       }).mount("#app")
     </script>

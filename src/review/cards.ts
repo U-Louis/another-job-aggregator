@@ -1,5 +1,5 @@
 export const STATUS_PROPERTY = "Status"
-export const REVIEW_DECISIONS = ["interesting", "archived"] as const
+export const REVIEW_DECISIONS = ["interesting", "archived", "applied"] as const
 
 export type ReviewDecision = (typeof REVIEW_DECISIONS)[number]
 
@@ -73,11 +73,11 @@ function readSelect(property: unknown): string {
   return value.name
 }
 
-/** Unreviewed cards only: Status select is empty. Newest publishedAt first. */
-export function toReviewCards(pages: NotionPageLike[]): ReviewCard[] {
+/** Cards whose Status select equals `status` (`""` = empty). Newest publishedAt first. */
+export function toReviewCards(pages: NotionPageLike[], status = ""): ReviewCard[] {
   const cards: ReviewCard[] = []
   for (const page of pages) {
-    if (readSelect(page.properties[STATUS_PROPERTY])) continue
+    if (readSelect(page.properties[STATUS_PROPERTY]) !== status) continue
     cards.push({
       id: page.id,
       title: readText(page.properties.Title),
