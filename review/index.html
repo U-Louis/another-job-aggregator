@@ -28,26 +28,66 @@
           radial-gradient(circle at 80% 90%, #1a2744 0%, transparent 40%),
           #070b14;
       }
-      body::before {
-        content: "";
+      .stars {
         position: fixed;
         inset: 0;
+        z-index: 0;
+        overflow: hidden;
         pointer-events: none;
+      }
+      .stars div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 200%;
+        height: 100%;
+        background-repeat: repeat-x;
+        background-size: 50% 100%;
+        animation: star-drift linear infinite;
+      }
+      .stars .far {
+        animation-duration: 75s;
+        opacity: 0.55;
         background-image:
-          radial-gradient(1.5px 1.5px at 8% 12%, #fff 50%, transparent 51%),
-          radial-gradient(1.5px 1.5px at 22% 70%, #fff 50%, transparent 51%),
-          radial-gradient(2px 2px at 40% 22%, #d6e6ff 50%, transparent 51%),
-          radial-gradient(1px 1px at 63% 18%, #fff 50%, transparent 51%),
-          radial-gradient(1.5px 1.5px at 78% 42%, #fff 50%, transparent 51%),
-          radial-gradient(1px 1px at 90% 16%, #fff 50%, transparent 51%),
-          radial-gradient(2px 2px at 15% 40%, #fff 50%, transparent 51%),
-          radial-gradient(1px 1px at 55% 78%, #fff 50%, transparent 51%),
-          radial-gradient(1.5px 1.5px at 84% 74%, #fff 50%, transparent 51%),
-          radial-gradient(1px 1px at 33% 88%, #fff 50%, transparent 51%);
-        opacity: 0.85;
+          radial-gradient(5px 5px at 8% 14%, #fff 42%, transparent 70%),
+          radial-gradient(5px 5px at 24% 72%, #fff 42%, transparent 70%),
+          radial-gradient(5px 5px at 41% 28%, #d6e6ff 42%, transparent 70%),
+          radial-gradient(5px 5px at 63% 18%, #fff 42%, transparent 70%),
+          radial-gradient(5px 5px at 77% 84%, #fff 42%, transparent 70%),
+          radial-gradient(5px 5px at 91% 46%, #fff 42%, transparent 70%),
+          radial-gradient(5px 5px at 15% 48%, #d6e6ff 42%, transparent 70%);
+      }
+      .stars .mid {
+        animation-duration: 40s;
+        opacity: 0.8;
+        background-image:
+          radial-gradient(8px 8px at 6% 32%, #fff 42%, transparent 70%),
+          radial-gradient(8px 8px at 19% 78%, #fff 42%, transparent 70%),
+          radial-gradient(8px 8px at 34% 12%, #d6e6ff 42%, transparent 70%),
+          radial-gradient(8px 8px at 48% 58%, #fff 42%, transparent 70%),
+          radial-gradient(8px 8px at 66% 36%, #fff 42%, transparent 70%),
+          radial-gradient(8px 8px at 82% 68%, #fff 42%, transparent 70%),
+          radial-gradient(8px 8px at 94% 16%, #d6e6ff 42%, transparent 70%);
+      }
+      .stars .near {
+        animation-duration: 25s;
+        opacity: 0.95;
+        background-image:
+          radial-gradient(10px 10px at 12% 62%, #fff 42%, transparent 70%),
+          radial-gradient(10px 10px at 28% 22%, #fff 42%, transparent 70%),
+          radial-gradient(10px 10px at 44% 88%, #d6e6ff 42%, transparent 70%),
+          radial-gradient(10px 10px at 57% 8%, #fff 42%, transparent 70%),
+          radial-gradient(10px 10px at 71% 48%, #fff 42%, transparent 70%),
+          radial-gradient(10px 10px at 86% 30%, #fff 42%, transparent 70%),
+          radial-gradient(10px 10px at 96% 76%, #d6e6ff 42%, transparent 70%);
+      }
+      @keyframes star-drift {
+        from { transform: translateX(-50%); }
+        to { transform: translateX(0); }
       }
       #app {
         position: relative;
+        z-index: 1;
         max-width: 52rem;
         min-height: 100vh;
         margin: 0 auto;
@@ -256,6 +296,11 @@
     </style>
   </head>
   <body>
+    <div class="stars" aria-hidden="true">
+      <div class="far"></div>
+      <div class="mid"></div>
+      <div class="near"></div>
+    </div>
     <div id="app">
       <header>
         <h1>Emergency meeting</h1>
