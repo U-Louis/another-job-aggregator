@@ -63,10 +63,10 @@ test("toReviewCards can keep a single status", () => {
   )
 })
 
-test("isReviewDecision accepts interesting, archived, and applied", () => {
+test("isReviewDecision accepts interesting, archived, and selected", () => {
   assert.equal(isReviewDecision("interesting"), true)
   assert.equal(isReviewDecision("archived"), true)
-  assert.equal(isReviewDecision("applied"), true)
+  assert.equal(isReviewDecision("selected"), true)
   assert.equal(isReviewDecision("hired"), false)
   assert.equal(isReviewDecision(null), false)
 })
@@ -78,7 +78,7 @@ test("buildStatusUpdate sets the Status select", () => {
   assert.deepEqual(buildStatusUpdate("archived"), {
     Status: { select: { name: "archived" } },
   })
-  assert.deepEqual(buildStatusUpdate("applied"), {
-    Status: { select: { name: "applied" } },
+  assert.deepEqual(buildStatusUpdate("selected"), {
+    Status: { select: { name: "selected" } },
   })
 })

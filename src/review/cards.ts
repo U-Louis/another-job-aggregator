@@ -1,5 +1,5 @@
 export const STATUS_PROPERTY = "Status"
-export const REVIEW_DECISIONS = ["interesting", "archived", "applied"] as const
+export const REVIEW_DECISIONS = ["interesting", "archived", "selected"] as const
 
 export type ReviewDecision = (typeof REVIEW_DECISIONS)[number]
 

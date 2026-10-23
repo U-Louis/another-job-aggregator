@@ -444,7 +444,7 @@
           </div>
           <p class="stamp" v-if="motion === 'eject'">Ejected</p>
           <p class="stamp ok" v-if="motion === 'safe'">Crewmate</p>
-          <p class="stamp gold" v-if="motion === 'victory'">Applied</p>
+          <p class="stamp gold" v-if="motion === 'victory'">Selected</p>
         </div>
         <div class="identity">
           <p class="nameplate">{{ current.company || "Unknown" }}</p>
@@ -463,10 +463,10 @@
             No <small>EJECT <kbd>N</kbd></small>
           </button>
           <button class="view" type="button" :disabled="!current.url || busy" @click="view">
-            View <small>{{ victory ? "APPLIED" : "OPEN" }} <kbd>V</kbd></small>
+            View <small>{{ victory ? "SELECTED" : "OPEN" }} <kbd>V</kbd></small>
           </button>
           <button class="yes" type="button" :disabled="busy" @click="decide(yesDecision)">
-            Yes <small>{{ victory ? "APPLIED" : "CREWMATE" }} <kbd>Y</kbd></small>
+            Yes <small>{{ victory ? "SELECTED" : "CREWMATE" }} <kbd>Y</kbd></small>
           </button>
         </div>
         </article>
@@ -492,7 +492,7 @@
       createApp({
         setup() {
           const victory = location.pathname === "/victory"
-          const yesDecision = victory ? "applied" : "interesting"
+          const yesDecision = victory ? "selected" : "interesting"
           const jobs = ref([])
           const loading = ref(true)
           const busy = ref(false)
@@ -552,7 +552,7 @@
             const card = current.value
             if (!card?.url || busy.value) return
             window.open(card.url, "_blank", "noopener")
-            if (victory) decide("applied")
+            if (victory) decide("selected")
           }
 
           function onKey(event) {

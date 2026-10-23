@@ -61,7 +61,7 @@ async function listCards(queue: "review" | "interesting") {
   return toReviewCards(fullPages, queue === "interesting" ? "interesting" : "")
 }
 
-async function setDecision(pageId: string, decision: "interesting" | "archived" | "applied") {
+async function setDecision(pageId: string, decision: "interesting" | "archived" | "selected") {
   const client = createNotionClient()
   await client.pages.update({
     page_id: pageId,
@@ -119,7 +119,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
         ? body.decision
         : undefined
     if (!isReviewDecision(decision)) {
-      sendJson(res, 400, { error: "Decision must be interesting, archived, or applied" })
+      sendJson(res, 400, { error: "Decision must be interesting, archived, or selected" })
       return
     }
     await setDecision(pageId, decision)
