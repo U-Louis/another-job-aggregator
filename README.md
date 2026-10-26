@@ -14,8 +14,8 @@ Computation is meant to be done in github actions. Simple. And free minutes are 
 Storage is in a notion db, that's easy, free and flexible.
 I made a few versatile adapters for different categories of datasources but for implementing a new one, it may require to build another specific adapter.
 Crawling this notion db was unpleasant so I made a little HMI inspired by Among Us. More fun. One should'nt underestimate moral.
-<img width="1728" height="1158" alt="Capture d’écran 2026-10-26 à 13 21 36" src="https://github.com/user-attachments/assets/56d9225d-4b55-4041-b395-063efc5b8b8d" />
-<img width="1348" height="982" alt="Capture d’écran 2026-10-26 à 13 21 43" src="https://github.com/user-attachments/assets/7015e874-311a-468f-9b7f-d2bc5d49360d" />
+<img width="864" height="579" alt="job offers" src="https://github.com/user-attachments/assets/56d9225d-4b55-4041-b395-063efc5b8b8d" />
+<img width="674" height="481" alt="selected jobs" src="https://github.com/user-attachments/assets/7015e874-311a-468f-9b7f-d2bc5d49360d" />
 
 🚀 Quick Start
 
