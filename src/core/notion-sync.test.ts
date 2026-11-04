@@ -228,7 +228,11 @@ test("syncOffersToNotion creates new pages and updates existing ones sequentiall
 
   const summary = await syncOffersToNotion(client, "db-1", [existing, fresh])
 
-  assert.deepEqual(summary, { created: 1, updated: 1 })
+  assert.deepEqual(summary, {
+    created: 1,
+    updated: 1,
+    createdPages: [{ pageId: "page-new", offer: fresh }],
+  })
   assert.equal(updated.length, 1)
   assert.equal(created.length, 1)
   assert.equal((updated[0] as { page_id: string }).page_id, "page-existing")

@@ -7,8 +7,8 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 ## Build loop (per provider)
 
 1. Scaffold core + type-level fetch layer
-2. Add conf file for the query profile (`configs/<profile>.yaml`)
-3. Run `npm run test-payload -- --conf configs/<profile>.yaml` → save as `payloads/<profile>.json` (gitignored)
+2. Add conf file for the query profile (`configs/search/<profile>.yaml`)
+3. Run `npm run test-payload -- --conf configs/search/<profile>.yaml` → save as `payloads/<profile>.json` (gitignored)
 4. Implement `schema.ts` + `query.ts` + `adapt.ts` + unit test against fixture
 5. Validate full UC: fetch → adapt → filter → dedup → Notion
 6. Repeat for next provider / query profile
@@ -29,6 +29,7 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 | 7 | `external-scraper` fetch (Bright Data API) + LinkedIn adapter + conf + full UC | done |
 | 8 | Indeed adapter (`provider: indeed`, same Bright Data fetch layer) | pending |
 | 9 | RSS fetch layer + We Work Remotely provider | done |
+| 10 | Review new Notion cards from `configs/agents/review-rules.yaml` | done |
 
 ## Unit tests (hand-run, no CI gate)
 
@@ -37,6 +38,7 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 - `applyForbiddenFilter()` — title exclusion
 - `dedup()` — `normalize(title) | normalize(company)` collapse
 - `truncateDescription()` — 1900 char hard slice + `…`
+- `reviewCreatedPages()` — matching rule comments then archives; no match and failures leave Status empty
 
 ## `.gitignore`
 
@@ -49,4 +51,4 @@ node_modules/  dist/  .env  .env.local  *.log  .DS_Store  coverage/  .cache/
 - Git: handled manually, agent does not commit/push unless asked
 - No JSON run artifacts — in-memory sync only
 - Errors non-blocking; artifact upload only if log non-empty
-- One conf file per query profile; `aggregate.yml` matrix over `configs/*.yaml`
+- One conf file per query profile; `aggregate.yml` matrix over `configs/search/*.yaml`

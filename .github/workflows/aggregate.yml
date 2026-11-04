@@ -20,7 +20,7 @@ jobs:
         run: |
           {
             echo -n 'configs='
-            find configs -maxdepth 1 \( -name '*.yaml' -o -name '*.yml' \) \
+            find configs/search -maxdepth 1 \( -name '*.yaml' -o -name '*.yml' \) \
               ! -name 'shared-forbidden-strings.yaml' \
               ! -name 'linkedin.yaml' \
               ! -name 'linkedin-remote.yaml' \

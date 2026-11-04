@@ -48,8 +48,8 @@ sources:
 `
 
 test("profileNameFromConfPath strips yaml extension", () => {
-  assert.equal(profileNameFromConfPath("configs/adzuna-remote.yaml"), "adzuna-remote")
-  assert.equal(profileNameFromConfPath("configs/adzuna-remote.yml"), "adzuna-remote")
+  assert.equal(profileNameFromConfPath("configs/search/adzuna-remote.yaml"), "adzuna-remote")
+  assert.equal(profileNameFromConfPath("configs/search/adzuna-remote.yml"), "adzuna-remote")
 })
 
 test("fixturePath resolves profile name under payloads/", () => {

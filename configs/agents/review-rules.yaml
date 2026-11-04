@@ -1,0 +1,16 @@
+# Archive rules for newly created Notion cards.
+# Fill `rules`. Each entry is one reason to set Status to "archived".
+# `reason` is what the model matches against.
+# `comment` is posted on the card verbatim when that rule matches.
+# No matching rule leaves the card in the review queue.
+# An empty list skips review.
+#
+# grok-4.7 on the xAI API, reasoning effort medium.
+# Grok 4.7 Fast is a different model and is not requested.
+
+model: grok-4.7
+reasoning_effort: medium
+rules:
+  - id: zone
+    reason: if the job is (NOT full remote) AND (NOT around Caen or Normandy) THEN archive it
+    comment: Archived — not full remote and not around Caen or Normandy.

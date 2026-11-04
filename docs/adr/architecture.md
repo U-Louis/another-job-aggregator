@@ -98,7 +98,7 @@ Dedup collision within a run: keep first winner (stable by source order in conf)
 
 ## Config
 
-One self-contained YAML file per query profile. Multiple conf files → single `aggregate.yml` workflow with a matrix; all write to the **same** Notion DB.
+One self-contained YAML file per query profile, under `configs/search/`. Multiple conf files → single `aggregate.yml` workflow with a matrix; all write to the **same** Notion DB. Agent settings live under `configs/agents/`.
 
 ```yaml
 forbiddenStringsFrom: shared-forbidden-strings.yaml
@@ -122,7 +122,7 @@ sources:
 - `query.what_or` — optional Adzuna search param (OR at API level). When present, post-fetch filter also requires at least one term in **title or description**.
 - `provider` — selects adapter folder under `sources/<type>/` (e.g. `adzuna` → `sources/api/adzuna/`).
 - `id` — profile label; becomes `JobOffer.source`. One source entry per conf file in v1.
-- Secrets: copy `.env.example` → `.env.local` locally (`NOTION_TOKEN`, `NOTION_DATABASE_ID`, `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, plus per-provider keys as needed). In GitHub Actions, paste the filled-in file into the `ENVLOCAL` repository secret; the workflow writes it to `.env.local` before each run.
+- Secrets: copy `.env.example` → `.env.local` locally (`NOTION_TOKEN`, `NOTION_DATABASE_ID`, `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, optional `XAI_API_KEY`, plus per-provider keys as needed). In GitHub Actions, paste the filled-in file into the `ENVLOCAL` repository secret; the workflow writes it to `.env.local` before each run.
 
 ## Notion
 
@@ -130,7 +130,18 @@ sources:
 - Properties: Title, Company, URL, Location, Remote (select), Salary, Description (truncated), PublishedAt (text), Source, DedupKey (upsert key).
 - On run: full DB query to load `dedupKey → pageId` map (no GHA cache in v1).
 - Sequential writes; application-level retry on 429 / rate-limited and 5xx responses (same backoff as fetch — 3 retries, exponential).
-- No stale-job lifecycle — out of scope.
+- No stale-job lifecycle — pages are not archived or deleted because they aged out.
+- New pages can be auto-archived after create (see Review). Status is not written on update.
+
+## Review
+
+After Notion sync, each page **created** in that run is screened. Updated pages are left alone.
+
+`configs/agents/review-rules.yaml` holds the rules and pins the call to `grok-4.7` with `reasoning_effort: medium`. Grok 4.7 Fast is not requested. Each rule has an `id`, a `reason` (when to archive), and a `comment` (posted verbatim). The model picks at most one rule id. A match posts that comment, then sets Status to `archived`. No match leaves Status empty, so the card stays in the local review queue. The model does not write the comment.
+
+`XAI_API_KEY` lives in `.env.local` / the `ENVLOCAL` secret. An empty key or an empty `rules` list skips the call. A failed call leaves the card unarchived, logs the error, and is not retried on a later run.
+
+Search profiles live under `configs/search/`. The workflow matrix lists that folder only.
 
 ## Error handling
 
@@ -176,11 +187,14 @@ src/
     xhr/ ...
     external-scraper/ ...
 configs/
-  shared-forbidden-strings.yaml
-  adzuna.yaml
-  adzuna-remote.yaml
-  remotive.yaml
-  remotive-remote.yaml
+  search/                       # one YAML per query profile
+    shared-forbidden-strings.yaml
+    adzuna.yaml
+    adzuna-remote.yaml
+    remotive.yaml
+    remotive-remote.yaml
+  agents/
+    review-rules.yaml           # archive reasons
 payloads/                 # gitignored captured API responses
 .github/workflows/
   aggregate.yml
@@ -190,7 +204,7 @@ payloads/                 # gitignored captured API responses
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `aggregate.yml` | Cron `0 7 * * *` with `timezone: "Europe/Paris"` + `workflow_dispatch` | Matrix over `configs/*.yaml`; full pipeline per conf |
+| `aggregate.yml` | Cron `0 7 * * *` with `timezone: "Europe/Paris"` + `workflow_dispatch` | Matrix over `configs/search/*.yaml`; full pipeline per conf |
 
 Matrix jobs run **sequentially** (`max-parallel: 1`) so each job sees prior upserts and avoids duplicate Notion rows from concurrent writes.
 
@@ -200,12 +214,11 @@ Caching: npm (`setup-node`).
 
 - ESM (`"type": "module"`).
 - Tests: `node:test` + `tsx` — hand-run, no CI gate.
-- Payload capture: `npm run test-payload -- --conf configs/<profile>.yaml` → `payloads/<profile>.json` (gitignored, local CLI, not a GHA workflow).
+- Payload capture: `npm run test-payload -- --conf configs/search/<profile>.yaml` → `payloads/<profile>.json` (gitignored, local CLI, not a GHA workflow).
 
 ## Out of scope
 
 - JSON run artifacts
 - Stale job archival / deletion
-- Job lifecycle management beyond kanban feed
 - CI test gate (tests exist, run manually)
 - `test-payload.yml` GHA workflow

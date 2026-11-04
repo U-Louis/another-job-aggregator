@@ -29,7 +29,16 @@ type RichTextRequest = {
   text: { content: string }
 }
 
-export type NotionSyncClient = Pick<Client, "databases" | "pages">
+export type NotionSyncClient = {
+  databases: Pick<Client["databases"], "query">
+  pages: Pick<Client["pages"], "create" | "update">
+  comments: Pick<Client["comments"], "create">
+}
+
+export type CreatedNotionPage = {
+  pageId: string
+  offer: JobOffer
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -76,6 +85,9 @@ export function wrapNotionClientWithRetry(client: Client): NotionSyncClient {
     pages: {
       create: (args) => withNotionRetry(() => client.pages.create(args)),
       update: (args) => withNotionRetry(() => client.pages.update(args)),
+    },
+    comments: {
+      create: (args) => withNotionRetry(() => client.comments.create(args)),
     },
   }
 }
@@ -173,10 +185,11 @@ export async function syncOffersToNotion(
   client: NotionSyncClient,
   databaseId: string,
   offers: JobOffer[],
-): Promise<{ created: number; updated: number }> {
+): Promise<{ created: number; updated: number; createdPages: CreatedNotionPage[] }> {
   const dedupKeyToPageId = await loadDedupKeyMap(client, databaseId)
   let created = 0
   let updated = 0
+  const createdPages: CreatedNotionPage[] = []
 
   for (const offer of offers) {
     const properties = buildPageProperties(offer)
@@ -194,11 +207,12 @@ export async function syncOffersToNotion(
         properties: properties as Parameters<Client["pages"]["create"]>[0]["properties"],
       })
       dedupKeyToPageId.set(offer.dedupKey, page.id)
+      createdPages.push({ pageId: page.id, offer })
       created += 1
     }
   }
 
-  return { created, updated }
+  return { created, updated, createdPages }
 }
 
 export function requireEnv(name: string): string {

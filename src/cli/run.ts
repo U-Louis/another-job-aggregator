@@ -13,6 +13,9 @@ import {
   requireEnv,
   syncOffersToNotion,
 } from "../core/notion-sync.ts"
+import { reviewNewCards } from "../review/apply.ts"
+import { completeGrokChat } from "../review/grok.ts"
+import { REVIEW_RULES_PATH } from "../review/rules.ts"
 import "../sources/register-adapters.ts"
 
 const ERROR_LOG_PATH = process.env.ERROR_LOG_PATH ?? "errors.log"
@@ -68,12 +71,24 @@ async function main(): Promise<number> {
     try {
       const client = createNotionClient()
       const databaseId = requireEnv("NOTION_DATABASE_ID")
-      const { created, updated } = await syncOffersToNotion(
+      const { created, updated, createdPages } = await syncOffersToNotion(
         client,
         databaseId,
         offers,
       )
       console.log(`Notion sync: ${created} created, ${updated} updated`)
+      await reviewNewCards({
+        client,
+        createdPages,
+        rulesPath: REVIEW_RULES_PATH,
+        apiKey: process.env.XAI_API_KEY,
+        complete: (input) => completeGrokChat(process.env.XAI_API_KEY ?? "", input),
+        onError: (message) => {
+          errorLog.add("review", message)
+          console.error(`Review: ${message}`)
+        },
+        log: (message) => console.log(message),
+      })
     } catch (err) {
       notionOk = false
       const message = errorMessage(err)
