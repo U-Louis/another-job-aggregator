@@ -6,7 +6,7 @@ import { test } from "node:test"
 import type { NotionSyncClient } from "../core/notion-sync.ts"
 import { offer } from "../test/job-offer-fixture.ts"
 import { reviewCreatedPages, reviewNewCards } from "./apply.ts"
-import type { GrokChatInput } from "./grok.ts"
+import type { ReviewChatInput } from "./cursor.ts"
 import type { ReviewRules } from "./rules.ts"
 
 const rules: ReviewRules = {
@@ -58,7 +58,7 @@ function notionClient(): {
 
 test("reviewCreatedPages comments with the rule text, then archives", async () => {
   const notion = notionClient()
-  const seen: GrokChatInput[] = []
+  const seen: ReviewChatInput[] = []
   const summary = await reviewCreatedPages(
     notion.client,
     [page("Intern")],
@@ -194,7 +194,7 @@ test("reviewNewCards skips when the key or the rules list is empty", async () =>
   })
 
   assert.deepEqual(logs, [
-    "Review: skipped (XAI_API_KEY unset)",
+    "Review: skipped (CURSOR_API_KEY unset)",
     "Review: skipped (no rules)",
   ])
   assert.equal(calls, 0)

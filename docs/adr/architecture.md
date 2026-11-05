@@ -122,7 +122,7 @@ sources:
 - `query.what_or` — optional Adzuna search param (OR at API level). When present, post-fetch filter also requires at least one term in **title or description**.
 - `provider` — selects adapter folder under `sources/<type>/` (e.g. `adzuna` → `sources/api/adzuna/`).
 - `id` — profile label; becomes `JobOffer.source`. One source entry per conf file in v1.
-- Secrets: copy `.env.example` → `.env.local` locally (`NOTION_TOKEN`, `NOTION_DATABASE_ID`, `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, optional `XAI_API_KEY`, plus per-provider keys as needed). In GitHub Actions, paste the filled-in file into the `ENVLOCAL` repository secret; the workflow writes it to `.env.local` before each run.
+- Secrets: copy `.env.example` → `.env.local` locally (`NOTION_TOKEN`, `NOTION_DATABASE_ID`, `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, optional `CURSOR_API_KEY`, plus per-provider keys as needed). In GitHub Actions, paste the filled-in file into the `ENVLOCAL` repository secret; the workflow writes it to `.env.local` before each run.
 
 ## Notion
 
@@ -137,9 +137,9 @@ sources:
 
 After Notion sync, each page **created** in that run is screened. Updated pages are left alone.
 
-`configs/agents/review-rules.yaml` holds the rules and pins the call to `grok-4.7` with `reasoning_effort: medium`. Grok 4.7 Fast is not requested. Each rule has an `id`, a `reason` (when to archive), and a `comment` (posted verbatim). The model picks at most one rule id. A match posts that comment, then sets Status to `archived`. No match leaves Status empty, so the card stays in the local review queue. The model does not write the comment.
+`configs/agents/review-rules.yaml` holds the rules. The GitHub Actions run sends each new card to a Cursor cloud agent: `grok-4.7`, effort `medium`, fast `false`, no repository, and no pull request. Each rule has an `id`, a `reason` (when to archive), and a `comment` (posted verbatim). The model picks at most one rule id. A match posts that comment, then sets Status to `archived`. No match leaves Status empty, so the card stays in the review queue. The model does not write the comment.
 
-`XAI_API_KEY` lives in `.env.local` / the `ENVLOCAL` secret. An empty key or an empty `rules` list skips the call. A failed call leaves the card unarchived, logs the error, and is not retried on a later run.
+`CURSOR_API_KEY` lives in `.env.local` / the `ENVLOCAL` secret. An empty key or an empty `rules` list skips the call. A failed call leaves the card unarchived, logs the error, and is not retried on a later run.
 
 Search profiles live under `configs/search/`. The workflow matrix lists that folder only.
 

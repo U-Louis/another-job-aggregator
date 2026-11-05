@@ -14,7 +14,7 @@ import {
   syncOffersToNotion,
 } from "../core/notion-sync.ts"
 import { reviewNewCards } from "../review/apply.ts"
-import { completeGrokChat } from "../review/grok.ts"
+import { completeCursorReview } from "../review/cursor.ts"
 import { REVIEW_RULES_PATH } from "../review/rules.ts"
 import "../sources/register-adapters.ts"
 
@@ -81,8 +81,8 @@ async function main(): Promise<number> {
         client,
         createdPages,
         rulesPath: REVIEW_RULES_PATH,
-        apiKey: process.env.XAI_API_KEY,
-        complete: (input) => completeGrokChat(process.env.XAI_API_KEY ?? "", input),
+        apiKey: process.env.CURSOR_API_KEY,
+        complete: (input) => completeCursorReview(process.env.CURSOR_API_KEY ?? "", input),
         onError: (message) => {
           errorLog.add("review", message)
           console.error(`Review: ${message}`)

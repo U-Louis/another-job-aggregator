@@ -9,7 +9,7 @@ import {
   verdictJsonSchema,
   type ReviewRules,
 } from "./rules.ts"
-import type { GrokChatInput } from "./grok.ts"
+import type { ReviewChatInput } from "./cursor.ts"
 
 export type ReviewSummary = {
   archived: number
@@ -25,7 +25,7 @@ export async function reviewCreatedPages(
   client: NotionSyncClient,
   pages: CreatedNotionPage[],
   rules: ReviewRules,
-  complete: (input: GrokChatInput) => Promise<unknown>,
+  complete: (input: ReviewChatInput) => Promise<unknown>,
   onError: (message: string) => void,
 ): Promise<ReviewSummary> {
   const summary: ReviewSummary = { archived: 0, kept: 0, failed: 0 }
@@ -84,7 +84,7 @@ export async function reviewNewCards(options: {
   createdPages: CreatedNotionPage[]
   rulesPath: string
   apiKey: string | undefined
-  complete: (input: GrokChatInput) => Promise<unknown>
+  complete: (input: ReviewChatInput) => Promise<unknown>
   onError: (message: string) => void
   log: (message: string) => void
 }): Promise<void> {
@@ -94,7 +94,7 @@ export async function reviewNewCards(options: {
 
   const apiKey = options.apiKey?.trim() ?? ""
   if (!apiKey) {
-    options.log("Review: skipped (XAI_API_KEY unset)")
+    options.log("Review: skipped (CURSOR_API_KEY unset)")
     return
   }
 

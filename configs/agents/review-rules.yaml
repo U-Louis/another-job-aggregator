@@ -5,12 +5,14 @@
 # No matching rule leaves the card in the review queue.
 # An empty list skips review.
 #
-# grok-4.7 on the xAI API, reasoning effort medium.
-# Grok 4.7 Fast is a different model and is not requested.
+# grok-4.7 through Cursor, effort medium, fast off.
 
 model: grok-4.7
 reasoning_effort: medium
 rules:
+  - id: field
+    reason: if the job is NOT about tech, development, engineering, or IT THEN archive it
+    comment: Archived — not tech.
   - id: zone
     reason: if the job is (NOT full remote) AND (NOT around Caen or Normandy) THEN archive it
     comment: Archived — not full remote and not around Caen or Normandy.
