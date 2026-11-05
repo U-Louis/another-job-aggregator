@@ -64,3 +64,9 @@ Crawling the Notion DB directly was unpleasant, so I built a little HMI inspired
    ```bash
    npm run review
    ```
+
+### Dispatch a dry run
+
+```bash
+gh run list --workflow=aggregate.yml
+```
