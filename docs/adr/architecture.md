@@ -130,12 +130,12 @@ sources:
 - Properties: Title, Company, URL, Location, Remote (select), Salary, Description (truncated), PublishedAt (text), Source, DedupKey (upsert key).
 - On run: full DB query to load `dedupKey → pageId` map (no GHA cache in v1).
 - Sequential writes; application-level retry on 429 / rate-limited and 5xx responses (same backoff as fetch — 3 retries, exponential).
-- No stale-job lifecycle — pages are not archived or deleted because they aged out.
+- Pages with Status `archived` whose `created_time` is more than 30 days ago are trashed by the `cleanup` job (`archived: true` moves the page to trash). Interesting, selected, and unset pages stay.
 - New pages can be auto-archived after create (see Review). Status is not written on update.
 
 ## Review
 
-Source jobs only sync Notion. Each one writes `review-created.json` (the pages that job created) and uploads it. The `review` job at the end of `aggregate.yml` downloads those files and screens every new page. Updated pages are left alone.
+Source jobs only sync Notion. Each one writes `review-created.json` (the pages that job created) and uploads it. The `review` job at the end of `aggregate.yml` downloads those files and screens every new page. Updated pages are left alone. `cleanup` runs at the same time and does not read those artifacts.
 
 `configs/agents/review-rules.yaml` holds the rules. Each new card goes to a Cursor cloud agent: `grok-4.7`, effort `medium`, fast `false`, no repository, and no pull request. Each rule has an `id`, a `reason` (when to archive), and a `comment` (posted verbatim). The model picks at most one rule id. A match posts that comment, then sets Status to `archived`. No match leaves Status empty, so the card stays in the review queue. The model does not write the comment.
 
@@ -160,8 +160,10 @@ Search profiles live under `configs/search/`. The workflow matrix lists that fol
 ```
 src/
   cli/run.ts
+  cli/cleanup-stale.ts   # trash archived Notion pages older than 30 days
   cli/test-payload.ts    # local raw payload capture → fixture
   core/
+    notion-cleanup.ts    # deleteStalePages()
     load-config.ts       # YAML conf load + Zod validate (query-builder stage)
     normalize.ts         # normalize(), makeDedupKey()
     filter.ts
@@ -204,9 +206,9 @@ payloads/                 # gitignored captured API responses
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `aggregate.yml` | Cron `0 7 * * *` with `timezone: "Europe/Paris"` + `workflow_dispatch` | Matrix over `configs/search/*.yaml`, then a `review` job for pages created in that run |
+| `aggregate.yml` | Cron `0 7 * * *` with `timezone: "Europe/Paris"` + `workflow_dispatch` | Matrix over `configs/search/*.yaml`, then `review` and `cleanup` in parallel |
 
-Matrix jobs run **sequentially** (`max-parallel: 1`) so each job sees prior upserts and avoids duplicate Notion rows from concurrent writes.
+Matrix jobs run **sequentially** (`max-parallel: 1`) so each job sees prior upserts and avoids duplicate Notion rows from concurrent writes. `review` and `cleanup` both wait for that matrix, then run at the same time.
 
 Caching: npm (`setup-node`).
 
@@ -219,6 +221,5 @@ Caching: npm (`setup-node`).
 ## Out of scope
 
 - Persisted JSON dumps of fetched offers
-- Stale job archival / deletion
 - CI test gate (tests exist, run manually)
 - `test-payload.yml` GHA workflow

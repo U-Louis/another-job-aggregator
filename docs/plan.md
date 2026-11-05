@@ -30,6 +30,7 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 | 8 | Indeed adapter (`provider: indeed`, same Bright Data fetch layer) | pending |
 | 9 | RSS fetch layer + We Work Remotely provider | done |
 | 10 | Review new Notion cards from `configs/agents/review-rules.yaml` | done |
+| 11 | Trash archived Notion pages older than 30 days, in parallel with review | done |
 
 ## Unit tests (hand-run, no CI gate)
 
@@ -39,6 +40,7 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 - `dedup()` — `normalize(title) | normalize(company)` collapse
 - `truncateDescription()` — 1900 char hard slice + `…`
 - `reviewCreatedPages()` — matching rule comments then archives; no match and failures leave Status empty
+- `deleteStalePages()` — trash Status `archived` pages whose `created_time` is more than 30 days ago; leave every other status and newer pages; keep going when one delete fails
 
 ## `.gitignore`
 
