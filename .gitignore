@@ -4,6 +4,8 @@ dist/
 .env.local
 /payloads/*
 !/payloads/.gitkeep
+review-created.json
+review-created/
 *.log
 .DS_Store
 coverage/

@@ -13,9 +13,10 @@ import {
   requireEnv,
   syncOffersToNotion,
 } from "../core/notion-sync.ts"
-import { reviewNewCards } from "../review/apply.ts"
-import { completeCursorReview } from "../review/cursor.ts"
-import { REVIEW_RULES_PATH } from "../review/rules.ts"
+import {
+  CREATED_PAGES_PATH,
+  writeCreatedPages,
+} from "../review/created-pages.ts"
 import "../sources/register-adapters.ts"
 
 const ERROR_LOG_PATH = process.env.ERROR_LOG_PATH ?? "errors.log"
@@ -77,18 +78,7 @@ async function main(): Promise<number> {
         offers,
       )
       console.log(`Notion sync: ${created} created, ${updated} updated`)
-      await reviewNewCards({
-        client,
-        createdPages,
-        rulesPath: REVIEW_RULES_PATH,
-        apiKey: process.env.CURSOR_API_KEY,
-        complete: (input) => completeCursorReview(process.env.CURSOR_API_KEY ?? "", input),
-        onError: (message) => {
-          errorLog.add("review", message)
-          console.error(`Review: ${message}`)
-        },
-        log: (message) => console.log(message),
-      })
+      writeCreatedPages(CREATED_PAGES_PATH, createdPages)
     } catch (err) {
       notionOk = false
       const message = errorMessage(err)
@@ -97,6 +87,7 @@ async function main(): Promise<number> {
     }
   } else {
     console.log("Notion sync: skipped (no offers)")
+    writeCreatedPages(CREATED_PAGES_PATH, [])
   }
 
   if (writeErrorLogIfNonEmpty(ERROR_LOG_PATH, errorLog)) {

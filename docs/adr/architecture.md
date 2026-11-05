@@ -135,11 +135,11 @@ sources:
 
 ## Review
 
-After Notion sync, each page **created** in that run is screened. Updated pages are left alone.
+Source jobs only sync Notion. Each one writes `review-created.json` (the pages that job created) and uploads it. The `review` job at the end of `aggregate.yml` downloads those files and screens every new page. Updated pages are left alone.
 
-`configs/agents/review-rules.yaml` holds the rules. The GitHub Actions run sends each new card to a Cursor cloud agent: `grok-4.7`, effort `medium`, fast `false`, no repository, and no pull request. Each rule has an `id`, a `reason` (when to archive), and a `comment` (posted verbatim). The model picks at most one rule id. A match posts that comment, then sets Status to `archived`. No match leaves Status empty, so the card stays in the review queue. The model does not write the comment.
+`configs/agents/review-rules.yaml` holds the rules. Each new card goes to a Cursor cloud agent: `grok-4.7`, effort `medium`, fast `false`, no repository, and no pull request. Each rule has an `id`, a `reason` (when to archive), and a `comment` (posted verbatim). The model picks at most one rule id. A match posts that comment, then sets Status to `archived`. No match leaves Status empty, so the card stays in the review queue. The model does not write the comment.
 
-`CURSOR_API_KEY` lives in `.env.local` / the `ENVLOCAL` secret. An empty key or an empty `rules` list skips the call. A failed call leaves the card unarchived, logs the error, and is not retried on a later run.
+`CURSOR_API_KEY` lives in `.env.local` / the `ENVLOCAL` secret. An empty key or an empty `rules` list skips the call. A failed card leaves Status empty, is logged on the `review` job, and is not retried on a later run.
 
 Search profiles live under `configs/search/`. The workflow matrix lists that folder only.
 
@@ -204,7 +204,7 @@ payloads/                 # gitignored captured API responses
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `aggregate.yml` | Cron `0 7 * * *` with `timezone: "Europe/Paris"` + `workflow_dispatch` | Matrix over `configs/search/*.yaml`; full pipeline per conf |
+| `aggregate.yml` | Cron `0 7 * * *` with `timezone: "Europe/Paris"` + `workflow_dispatch` | Matrix over `configs/search/*.yaml`, then a `review` job for pages created in that run |
 
 Matrix jobs run **sequentially** (`max-parallel: 1`) so each job sees prior upserts and avoids duplicate Notion rows from concurrent writes.
 
@@ -218,7 +218,7 @@ Caching: npm (`setup-node`).
 
 ## Out of scope
 
-- JSON run artifacts
+- Persisted JSON dumps of fetched offers
 - Stale job archival / deletion
 - CI test gate (tests exist, run manually)
 - `test-payload.yml` GHA workflow

@@ -49,6 +49,6 @@ node_modules/  dist/  .env  .env.local  *.log  .DS_Store  coverage/  .cache/
 ## Constraints
 
 - Git: handled manually, agent does not commit/push unless asked
-- No JSON run artifacts — in-memory sync only
+- No persisted JSON dumps of fetched offers. The review job receives only the pages created in that run, as a workflow artifact
 - Errors non-blocking; artifact upload only if log non-empty
 - One conf file per query profile; `aggregate.yml` matrix over `configs/search/*.yaml`

@@ -69,3 +69,54 @@ jobs:
           name: ${{ steps.error-log.outputs.artifact }}
           path: errors.log
           if-no-files-found: ignore
+      - id: review-artifact
+        if: always()
+        env:
+          CONF: ${{ matrix.conf }}
+        run: echo "name=review-${CONF//\//-}" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ steps.review-artifact.outputs.name }}
+          path: review-created.json
+          if-no-files-found: ignore
+
+  review:
+    needs: run
+    if: always() && (needs.run.result == 'success' || needs.run.result == 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: review-*
+          path: review-created
+      - name: Review new cards
+        env:
+          ENVLOCAL: ${{ secrets.ENVLOCAL }}
+        run: |
+          set -a
+          printf '%s\n' "$ENVLOCAL" > .env.local
+          source .env.local
+          set +a
+          npx tsx src/cli/review-created.ts review-created
+      - id: error-log
+        if: always()
+        run: |
+          if [ -s errors.log ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.error-log.outputs.present == 'true'
+        with:
+          name: errors-review
+          path: errors.log
+          if-no-files-found: ignore
