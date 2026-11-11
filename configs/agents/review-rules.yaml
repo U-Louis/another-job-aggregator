@@ -16,3 +16,12 @@ rules:
   - id: zone
     reason: if the job is (NOT full remote) AND (NOT around Caen or Normandy) THEN archive it
     comment: Archived — not full remote and not around Caen or Normandy.
+  - id: zone2
+    reason: if the job is full remote but in US only or canada only or any country except France THEN archive it
+    comment: Archived — not full remote for France.
+  - id: zone3
+    reason: if the job is full remote but in has any citizenship required for any country except France THEN archive it
+    comment: Archived — not full remote for French citizens.
+  - id: stack
+    reason: if the job does NOT mention PHP, Laravel, Symfony, Vue, JavaScript, or TypeScript THEN archive it
+    comment: Archived — not my stack.

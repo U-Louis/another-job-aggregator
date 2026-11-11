@@ -47,3 +47,5 @@ forbiddenStrings:
   - devops
   - analyst
   - reviewer
+  - node
+  - node.js
