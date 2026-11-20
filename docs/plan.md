@@ -33,6 +33,7 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 | 11 | Trash archived Notion pages older than 30 days, in parallel with review | done |
 | 12 | LaraJobs API provider (`provider: larajobs`) + search conf | done |
 | 13 | Symfony Jobs RSS provider (`provider: symfony`) + search conf | done |
+| 14 | Himalayas API provider (`provider: himalayas`) + search conf | done |
 
 ## Unit tests (hand-run, no CI gate)
 

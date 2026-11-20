@@ -1,0 +1,15 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: himalayas
+    type: api
+    provider: himalayas
+    enabled: true
+    query:
+      q: developer
+      sort: recent
+      seniority: Mid-level,Senior
+      worldwide: true
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: ''
+      what_exclude_remote: ''
