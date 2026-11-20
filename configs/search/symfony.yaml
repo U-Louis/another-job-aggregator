@@ -1,0 +1,12 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: symfony
+    type: rss
+    provider: symfony
+    enabled: true
+    query:
+      feed_url: https://symfony.com/jobs.rss
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: ''
+      what_exclude_remote: partiel unknown
