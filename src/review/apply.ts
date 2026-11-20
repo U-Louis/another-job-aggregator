@@ -17,6 +17,9 @@ export type ReviewSummary = {
   failed: number
 }
 
+/** Cursor Pro allows 8 cloud agents; card review leaves one slot free. */
+export const MAX_CONCURRENT_REVIEW_AGENTS = 7
+
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err)
 }
@@ -37,7 +40,10 @@ export async function reviewCreatedPages(
   const schema = verdictJsonSchema(rules.rules.map((rule) => rule.id))
   const byId = new Map(rules.rules.map((rule) => [rule.id, rule]))
 
-  for (const page of pages) {
+  let nextIndex = 0
+  const workerCount = Math.min(MAX_CONCURRENT_REVIEW_AGENTS, pages.length)
+
+  async function reviewPage(page: CreatedNotionPage): Promise<void> {
     const label = `${page.offer.title} @ ${page.offer.company}`
     try {
       const raw = await complete({
@@ -50,13 +56,13 @@ export async function reviewCreatedPages(
       const ruleId = parseVerdict(raw)
       if (ruleId === null) {
         summary.kept += 1
-        continue
+        return
       }
       const rule = byId.get(ruleId)
       if (!rule) {
         summary.failed += 1
         onError(`${label}: unknown rule id ${ruleId}`)
-        continue
+        return
       }
 
       await client.comments.create({
@@ -75,6 +81,16 @@ export async function reviewCreatedPages(
       onError(`${label}: ${errorMessage(err)}`)
     }
   }
+
+  async function worker(): Promise<void> {
+    while (nextIndex < pages.length) {
+      const page = pages[nextIndex]
+      nextIndex += 1
+      await reviewPage(page)
+    }
+  }
+
+  await Promise.all(Array.from({ length: workerCount }, () => worker()))
 
   return summary
 }

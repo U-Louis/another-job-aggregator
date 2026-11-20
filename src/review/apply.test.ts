@@ -5,7 +5,11 @@ import { join } from "node:path"
 import { test } from "node:test"
 import type { NotionSyncClient } from "../core/notion-sync.ts"
 import { offer } from "../test/job-offer-fixture.ts"
-import { reviewCreatedPages, reviewNewCards } from "./apply.ts"
+import {
+  MAX_CONCURRENT_REVIEW_AGENTS,
+  reviewCreatedPages,
+  reviewNewCards,
+} from "./apply.ts"
 import type { ReviewChatInput } from "./cursor.ts"
 import type { ReviewRules } from "./rules.ts"
 
@@ -198,4 +202,85 @@ test("reviewNewCards skips when the key or the rules list is empty", async () =>
     "Review: skipped (no rules)",
   ])
   assert.equal(calls, 0)
+})
+
+function waitUntil(ready: () => boolean): Promise<void> {
+  const timeoutMs = 1000
+  const startedAt = Date.now()
+  return new Promise((resolve, reject) => {
+    const tick = () => {
+      if (ready()) {
+        resolve()
+        return
+      }
+      if (Date.now() - startedAt > timeoutMs) {
+        reject(new Error("timed out waiting for the review pool"))
+        return
+      }
+      setImmediate(tick)
+    }
+    tick()
+  })
+}
+
+test("reviewCreatedPages runs at most 7 cloud agents at once", async () => {
+  assert.equal(MAX_CONCURRENT_REVIEW_AGENTS, 7)
+  const notion = notionClient()
+  const total = 10
+  let inFlight = 0
+  let maxInFlight = 0
+  let started = 0
+  let hold = true
+  const waiting: Array<() => void> = []
+
+  const summaryPromise = reviewCreatedPages(
+    notion.client,
+    Array.from({ length: total }, (_, index) => page(`Role ${index}`)),
+    rules,
+    async () => {
+      started += 1
+      inFlight += 1
+      maxInFlight = Math.max(maxInFlight, inFlight)
+      await new Promise<void>((resolve) => {
+        if (!hold) {
+          inFlight -= 1
+          resolve()
+          return
+        }
+        waiting.push(() => {
+          inFlight -= 1
+          resolve()
+        })
+      })
+      return { ruleId: null }
+    },
+    () => {
+      throw new Error("unexpected error")
+    },
+  )
+
+  try {
+    await waitUntil(() => started === 7)
+    assert.equal(started, 7)
+    assert.equal(inFlight, 7)
+    assert.equal(waiting.length, 7)
+
+    const resume = waiting.shift()
+    assert.ok(resume)
+    resume()
+
+    await waitUntil(() => started === 8)
+    assert.equal(started, 8)
+    assert.equal(inFlight, 7)
+    assert.equal(maxInFlight, 7)
+  } finally {
+    hold = false
+    for (const resume of waiting.splice(0)) resume()
+  }
+
+  const summary = await summaryPromise
+  assert.equal(maxInFlight, 7)
+  assert.equal(started, total)
+  assert.deepEqual(summary, { archived: 0, kept: total, failed: 0 })
+  assert.equal(notion.order.length, 0)
 })
