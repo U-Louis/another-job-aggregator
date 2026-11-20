@@ -1,0 +1,11 @@
+forbiddenStringsFrom: shared-forbidden-strings.yaml
+
+sources:
+  - id: larajobs
+    type: api
+    provider: larajobs
+    enabled: true
+    query:
+      what_or: developpeur développement logiciel web typescript PHP symfony laravel javascript
+      what_or_remote: ''
+      what_exclude_remote: ''

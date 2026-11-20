@@ -31,6 +31,7 @@ TypeScript (ESM) · Zod · native fetch · `@notionhq/client` · `node:test` · 
 | 9 | RSS fetch layer + We Work Remotely provider | done |
 | 10 | Review new Notion cards from `configs/agents/review-rules.yaml` | done |
 | 11 | Trash archived Notion pages older than 30 days, in parallel with review | done |
+| 12 | LaraJobs API provider (`provider: larajobs`) + search conf | done |
 
 ## Unit tests (hand-run, no CI gate)
 
