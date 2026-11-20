@@ -6,7 +6,7 @@ import {
 } from "./schema.ts"
 
 export const JTMS_ALGOLIA_APP_ID = "3PWOXB8RR8"
-export const JTMS_ALGOLIA_API_KEY = "9f6fbb0df5013236f8a29ed972622443"
+export const JTMS_ALGOLIA_API_KEY = "9cbc1c1663051f9aa3345e2ff63643d9"
 export const JTMS_ORIGIN = "https://jobs.makesense.org"
 export const JTMS_DEFAULT_HITS_PER_PAGE = 20
 export const JTMS_DEFAULT_MAX_PAGES = 3

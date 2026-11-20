@@ -49,3 +49,4 @@ forbiddenStrings:
   - reviewer
   - node
   - node.js
+  - windev
