@@ -17,8 +17,8 @@ export type ReviewSummary = {
   failed: number
 }
 
-/** Cursor Pro allows 8 cloud agents; card review leaves one slot free. */
-export const MAX_CONCURRENT_REVIEW_AGENTS = 7
+/** One Cloud Agent at a time stays inside the plan's simultaneous-agent cap. */
+export const MAX_CONCURRENT_REVIEW_AGENTS = 1
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err)

@@ -223,10 +223,10 @@ function waitUntil(ready: () => boolean): Promise<void> {
   })
 }
 
-test("reviewCreatedPages runs at most 7 cloud agents at once", async () => {
-  assert.equal(MAX_CONCURRENT_REVIEW_AGENTS, 7)
+test("reviewCreatedPages runs one cloud agent at a time", async () => {
+  assert.equal(MAX_CONCURRENT_REVIEW_AGENTS, 1)
   const notion = notionClient()
-  const total = 10
+  const total = 3
   let inFlight = 0
   let maxInFlight = 0
   let started = 0
@@ -260,26 +260,26 @@ test("reviewCreatedPages runs at most 7 cloud agents at once", async () => {
   )
 
   try {
-    await waitUntil(() => started === 7)
-    assert.equal(started, 7)
-    assert.equal(inFlight, 7)
-    assert.equal(waiting.length, 7)
+    await waitUntil(() => started === 1)
+    assert.equal(started, 1)
+    assert.equal(inFlight, 1)
+    assert.equal(waiting.length, 1)
 
     const resume = waiting.shift()
     assert.ok(resume)
     resume()
 
-    await waitUntil(() => started === 8)
-    assert.equal(started, 8)
-    assert.equal(inFlight, 7)
-    assert.equal(maxInFlight, 7)
+    await waitUntil(() => started === 2)
+    assert.equal(started, 2)
+    assert.equal(inFlight, 1)
+    assert.equal(maxInFlight, 1)
   } finally {
     hold = false
     for (const resume of waiting.splice(0)) resume()
   }
 
   const summary = await summaryPromise
-  assert.equal(maxInFlight, 7)
+  assert.equal(maxInFlight, 1)
   assert.equal(started, total)
   assert.deepEqual(summary, { archived: 0, kept: total, failed: 0 })
   assert.equal(notion.order.length, 0)
